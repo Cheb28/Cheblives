@@ -88,7 +88,7 @@ export default function Family({ state, refresh }) {
         <h3>Parents & Siblings</h3>
         {relatives.map(p => <div className="kv" key={p.id}>
           <span className="k">{p.relation}</span>
-          <span className="v">{p.alive ? `Age ${personAge(ch, p)} · relationship ${Math.round(p.relationshipScore)}` : 'Deceased'}</span>
+          <span className="v">{p.alive ? `Age ${personAge(ch, p)} · ${COUNTRY_BY_ID[p.countryId]?.name || ch.countryName} national · relationship ${Math.round(p.relationshipScore)}` : 'Deceased'}</span>
         </div>)}
       </div>
     </div>

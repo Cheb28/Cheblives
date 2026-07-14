@@ -65,7 +65,7 @@ function makePerson(rng, country, { relation, sex, ageOffset = 0, wealthClass })
   };
 }
 
-// options: { countryId, locationName, sex, ethnicity, religion, wealthClass, mode }
+// options may also include secondNationalityCountryId + foreignParentRelation.
 // mode 'random' = born-anywhere (weighted). Any explicitly provided field is locked.
 export function createCharacter(rng, options = {}) {
   let country;
@@ -77,8 +77,10 @@ export function createCharacter(rng, options = {}) {
 
   const sex = options.sex || (rng.chance(0.5) ? 'male' : 'female');
   const location = rollLocation(rng, country, options.locationName);
-  const ethnicity = options.ethnicity || rollDistribution(rng, country.ethnicGroups, 'Local');
-  const religion = options.religion || rollDistribution(rng, country.religions, 'None');
+  const localEthnicity = country.ethnicGroups?.some(x => x.name === options.ethnicity) ? options.ethnicity : null;
+  const localReligion = country.religions?.some(x => x.name === options.religion) ? options.religion : null;
+  const ethnicity = localEthnicity || rollDistribution(rng, country.ethnicGroups, 'Local');
+  const religion = localReligion || rollDistribution(rng, country.religions, 'None');
   const wealthClass = options.wealthClass || rollWealthClass(rng, country);
   const wealthIdx = WEALTH_CLASSES.indexOf(wealthClass);
 
@@ -160,17 +162,25 @@ export function createCharacter(rng, options = {}) {
     }));
   }
 
-  // A small share of births occur in multinational families. One parent has
-  // another citizenship; roughly half of those children also acquire it in
-  // this intentionally conservative abstraction of descent/registration law.
-  if (rng.chance(.03)) {
+  const setForeignParent = (foreign, relation, childInherits) => {
+    const parent = character.family.find(p => p.relation === relation);
+    if (!parent || !foreign) return;
+    parent.citizenships = [foreign.id];
+    parent.countryId = foreign.id;
+    parent.ethnicity = rollDistribution(rng, foreign.ethnicGroups, 'Local');
+    parent.religion = rollDistribution(rng, foreign.religions, 'None');
+    if (childInherits) character.immigration.citizenships.push(foreign.id);
+    character.immigration.citizenships = [...new Set(character.immigration.citizenships)];
+  };
+
+  const selectedForeign = COUNTRY_BY_ID[options.secondNationalityCountryId];
+  if (selectedForeign && selectedForeign.id !== country.id) {
+    setForeignParent(selectedForeign, options.foreignParentRelation === 'Mother' ? 'Mother' : 'Father', true);
+  } else if (rng.chance(.03)) {
     const candidates=COUNTRIES.filter(c=>c.id!==country.id);
     const nearby=candidates.filter(c=>c.region===country.region);
     const foreign=rng.pick(rng.chance(.75)&&nearby.length?nearby:candidates);
-    const parent=rng.pick(character.family.filter(p=>p.relation==='Father'||p.relation==='Mother'));
-    parent.citizenships=[...new Set([country.id,foreign.id])];
-    parent.countryId=foreign.id;
-    if(rng.chance(.5))character.immigration.citizenships.push(foreign.id);
+    setForeignParent(foreign, rng.chance(.5) ? 'Father' : 'Mother', rng.chance(.5));
   }
 
   return character;

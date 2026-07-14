@@ -228,7 +228,7 @@ assert.equal(overseasKorean.character.military.remaining,2,'South Korean 1.6-yea
 let multinationalFamilies=0;
 for(let seed=6200;seed<6400;seed++){
   const life=newGame({countryId:us.id,seed});
-  if(life.character.family.some(p=>p.citizenships?.length>1))multinationalFamilies++;
+  if(life.character.family.some(p=>['Father','Mother'].includes(p.relation)&&p.countryId!==us.id))multinationalFamilies++;
 }
 assert(multinationalFamilies>0&&multinationalFamilies<20,'multinational birth families remain rare but possible');
 

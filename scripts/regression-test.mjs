@@ -17,14 +17,28 @@ const korea = COUNTRY_BY_NAME['South Korea'];
   assert.equal(s.character.age, before + 1);
 }
 
-// Character-creation locks survive random-mode creation.
+// Custom identity choices must come from the selected birth country's lists.
 {
-  const s = newGame({ mode: 'random', countryId: us.id, sex: 'female', ethnicity: 'Locked ethnicity', religion: 'Locked religion', wealthClass: 'Rich', seed: 2 });
+  const chosenEthnicity=us.ethnicGroups[0].name,chosenReligion=us.religions[0].name;
+  const s = newGame({ mode: 'custom', countryId: us.id, sex: 'female', ethnicity: chosenEthnicity, religion: chosenReligion, wealthClass: 'Rich', seed: 2 });
   assert.equal(s.character.countryId, us.id);
   assert.equal(s.character.sex, 'female');
-  assert.equal(s.character.ethnicity, 'Locked ethnicity');
-  assert.equal(s.character.religion, 'Locked religion');
+  assert.equal(s.character.ethnicity, chosenEthnicity);
+  assert.equal(s.character.religion, chosenReligion);
   assert.equal(s.character.wealthClass, 'Rich');
+}
+
+// A requested second nationality belongs to the chosen foreign parent.
+{
+  const s=newGame({mode:'custom',countryId:us.id,secondNationalityCountryId:korea.id,foreignParentRelation:'Mother',seed:22});
+  const mother=s.character.family.find(p=>p.relation==='Mother');
+  const father=s.character.family.find(p=>p.relation==='Father');
+  assert.deepEqual(new Set(s.character.immigration.citizenships),new Set([us.id,korea.id]));
+  assert.equal(mother.countryId,korea.id);
+  assert.deepEqual(mother.citizenships,[korea.id]);
+  assert.equal(father.countryId,us.id);
+  assert(korea.ethnicGroups.some(x=>x.name===mother.ethnicity) || mother.ethnicity === 'Local');
+  assert(korea.religions.some(x=>x.name===mother.religion) || mother.religion === 'None');
 }
 
 // An unanswered job offer must decline, preserving the current situation.

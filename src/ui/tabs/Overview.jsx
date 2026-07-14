@@ -36,6 +36,7 @@ export default function Overview({ state, saveTools }) {
         <div className="kv"><span className="k">Location</span><span className="v">{ch.location.name}, {ch.countryName}</span></div>
         <div className="kv"><span className="k">Ethnicity</span><span className="v">{ch.ethnicity}</span></div>
         <div className="kv"><span className="k">Religion</span><span className="v">{ch.religion}</span></div>
+        <div className="kv"><span className="k">Citizenship(s)</span><span className="v">{(ch.immigration?.citizenships || [ch.countryId]).map(id => COUNTRY_BY_ID[id]?.name || id).join(', ')}</span></div>
         <div className="kv"><span className="k">Family wealth</span><span className="v">{ch.wealthClass}</span></div>
         <div className="kv"><span className="k">Status</span><span className="v">{ch.job ? jobTitle(ch.job) : titleCase(ch.employmentStatus)}</span></div>
         <div className="kv"><span className="k">Immigration status</span><span className="v">{titleCase(ch.immigration?.residence?.status || 'citizen')}</span></div>
