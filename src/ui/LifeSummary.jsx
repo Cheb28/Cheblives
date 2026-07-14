@@ -4,7 +4,7 @@ import { personAge } from '../engine/family.js';
 import { displayName } from '../engine/names.js';
 
 // Shown at death (GAME_DESIGN section 1). Heir continuation arrives in Phase 4.
-export default function LifeSummary({ state, onRestart, onContinueHeir }) {
+export default function LifeSummary({ state, onRestart, onContinueSuccessor }) {
   const ch = state.character;
   const country = COUNTRY_BY_ID[ch.countryId];
   const allLines = state.log.flatMap(e => e.lines.map(l => ({ age: e.age, l })));
@@ -36,19 +36,23 @@ export default function LifeSummary({ state, onRestart, onContinueHeir }) {
 
         {state.estate && <div className="panel" style={{ marginBottom: 18 }}>
           <h3>Estate & Inheritance</h3>
+          <div className="kv"><span className="k">Assets</span><span className="v">{money(state.estate.assets||0)}</span></div>
+          <div className="kv"><span className="k">Debts paid</span><span className="v">−{money(state.estate.debts||0)}</span></div>
+          <div className="kv"><span className="k">Funeral and final costs</span><span className="v">−{money(state.estate.funeralCost||0)}</span></div>
           <div className="kv"><span className="k">Inheritance tax</span><span className="v">−{money(state.estate.tax)} ({Math.round(state.estate.taxRate * 100)}%)</span></div>
           <div className="kv"><span className="k">Distributed</span><span className="v">{money(state.estate.distributable)}</span></div>
           {state.estate.shares.map(s => <div className="kv" key={s.id}>
             <span className="k">{s.label} ({Math.round(s.pct * 100)}%)</span><span className="v">{money(s.amount)}</span>
           </div>)}
-          {state.estate.shares.some(s => s.kind === 'child') && <div style={{ marginTop: 14 }}>
-            <div className="muted" style={{ fontSize: 12, marginBottom: 8 }}>Continue the family story as:</div>
+          {(state.estate.successors||[]).length>0 && <div style={{ marginTop: 14 }}>
+            <div className="muted" style={{ fontSize: 12, marginBottom: 8 }}>Succession {state.successionNumber||state.generation||1} ended. Continue the family story as:</div>
             <div className="row" style={{ flexWrap: 'wrap' }}>
-              {state.estate.shares.filter(s => s.kind === 'child').map(s => (
-                <button className="primary" key={s.id} onClick={() => onContinueHeir(s.id)}>{s.label}</button>
+              {(state.estate.successors||[]).map(s => (
+                <button className="primary" key={s.id} onClick={() => onContinueSuccessor(s.id)}>{s.label} · {titleCase(s.kind)}</button>
               ))}
             </div>
           </div>}
+          {(state.estate.successors||[]).length===0&&<div className="notice warn"><strong>No playable family successor remains.</strong><div className="muted">The family story ends here.{state.estate.escheat>0?` ${money(state.estate.escheat)} passes under local heirless-estate law.`:''}</div></div>}
         </div>}
 
         {(ch.immigration?.history || []).length > 0 && <div className="panel" style={{ marginBottom: 18 }}>
@@ -65,6 +69,8 @@ export default function LifeSummary({ state, onRestart, onContinueHeir }) {
           </div>)}
           {!ch.spouse && (ch.family || []).length === 0 && <div className="muted">No surviving family records.</div>}
         </div>
+
+        {(state.dynastyHistory||[]).length>0&&<div className="panel" style={{marginBottom:18}}><h3>Family Succession History</h3>{state.dynastyHistory.map(x=><div className="kv" key={x.succession}><span>Succession #{x.succession} · {titleCase(x.relation)}</span><span>{x.from} → {x.to} · {money(x.inheritance)}</span></div>)}</div>}
 
         <div className="panel" style={{ marginBottom: 18 }}>
           <h3>Medical History</h3>

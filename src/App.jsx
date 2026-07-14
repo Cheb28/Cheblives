@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useReducer, useCallback, useState } from 'react';
-import { newGame, stepYear, continueAsHeir } from './engine/game.js';
+import { newGame, stepYear, continueAsSuccessor } from './engine/game.js';
 import { autosave } from './engine/saves.js';
 import CharacterCreation from './ui/CharacterCreation.jsx';
 import Header from './ui/Header.jsx';
@@ -76,8 +76,8 @@ export default function App() {
     forceRender();
   }, []);
 
-  const continueHeir = useCallback((childId) => {
-    const next = continueAsHeir(gameRef.current, childId);
+  const continueSuccessor = useCallback((relativeId) => {
+    const next = continueAsSuccessor(gameRef.current, relativeId);
     if (!next) return;
     gameRef.current = next;
     try { if(autosave(next))setSaveRevision(x => x + 1); } catch { /* export remains available */ }
@@ -97,7 +97,7 @@ export default function App() {
   const state = gameRef.current;
   const saveTools = <SaveManager state={state} onLoad={loadGame} onNotice={setNotice} revision={saveRevision} />;
   if (!state) return <><CharacterCreation onStart={start} saveTools={saveTools} />{notice && <div className={`toast ${notice.bad?'bad':''}`} role="status">{notice.message}</div>}</>;
-  if (state.over) return <><Suspense fallback={<div className="loading" role="status">Loading life summary…</div>}><LifeSummary state={state} onRestart={restart} onContinueHeir={continueHeir} /></Suspense><Credits /></>;
+  if (state.over) return <><Suspense fallback={<div className="loading" role="status">Loading life summary…</div>}><LifeSummary state={state} onRestart={restart} onContinueSuccessor={continueSuccessor} /></Suspense><Credits /></>;
 
   const nPending = state.character.pendingDecisions?.length || 0;
   const badges = {};

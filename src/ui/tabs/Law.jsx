@@ -87,15 +87,16 @@ export default function Law({ state, refresh }) {
         <div className="kv"><span className="k">Estate exemption</span><span className="v">{money(rules.exemption)}</span></div>
         <div className="kv"><span className="k">Gift-tax rate</span><span className="v">{Math.round(rules.giftTaxRate*100)}%</span></div>
         <div className="kv"><span className="k">Surviving spouse exemption</span><span className="v">{rules.spouseExempt?'Modeled':'Not automatic'}</span></div>
+        <div className="kv"><span className="k">Protected spouse minimum</span><span className="v">{Math.round((rules.spouseMinimum||0)*100)}%</span></div>
         <div className="kv"><span className="k">Protected family share</span><span className="v">{Math.round(rules.protectedFamilyShare * 100)}%</span></div>
         <div className="muted" style={{ fontSize: 12, lineHeight: 1.5, marginTop: 10 }}>{rules.note}</div>
       </div>
 
       <div className="panel" style={{ gridColumn: '1 / -1' }}>
         <h3>Your Will</h3>
-        {beneficiaries.length === 0 ? <div className="muted">You need a spouse or child before you can name a family beneficiary.</div> : <>
+        {beneficiaries.length === 0 ? <div className="muted">No eligible family beneficiary is currently modeled.</div> : <>
           <div className="muted" style={{ fontSize: 12, marginBottom: 10 }}>
-            Enter percentage weights. If they do not total 100%, the game normalizes them proportionally. An unequal plan can occasionally be challenged under the local civil system.
+            Enter percentage weights for the nearest eligible family class. Living children prevent gifts to more distant relatives; grandchildren and extended relatives become eligible only when closer descendants do not exist. A spouse may retain a legally required share.
           </div>
           {beneficiaries.map(b => <label className="kv" key={b.id} style={{ alignItems: 'center' }}>
             <span className="k">{b.label}</span>

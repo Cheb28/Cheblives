@@ -102,7 +102,7 @@ export function listSaves() {
     if (!envelope) continue;
     const p = envelope.payload;
     out.push({ key: shortKey, name: envelope.name, savedAt: envelope.savedAt, age: p.character.age,
-      country: p.character.countryName, generation: p.generation || 1, auto: shortKey.startsWith('auto.') });
+      country:p.character.countryName,generation:p.generation||1,successionNumber:p.successionNumber||p.generation||1,auto:shortKey.startsWith('auto.') });
   }
   return out.sort((a, b) => b.savedAt.localeCompare(a.savedAt));
 }

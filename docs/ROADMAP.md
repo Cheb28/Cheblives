@@ -232,6 +232,32 @@ risk, hiring, layoff, and slower promotion rules. Finance and Career now open in
 sections. The dedicated Phase 10.3.1 regression checks, complete legacy suite, and production build
 pass.
 
+## Phase 10.3.2 — Dynasty Succession and Estate Corrections
+
+**Status: complete.** Rebuilt heir continuation so a chosen successor keeps their established
+identity, age, savings, debts, housing, spouse or partner, descendants, career and career history,
+education, health conditions, languages, citizenships, residence, and wider modeled family tree.
+Inheritance is added to the successor's existing savings rather than replacing it. The game records
+each playable succession and whether control stayed in the same generation or moved to another
+family-tree branch.
+
+Estate settlement now itemizes assets, all debts, court fines, business liabilities, funeral/final
+costs, inheritance tax, distributable wealth, and heirless wealth. Legal and playable priority is:
+living children; then grandchildren only without living children; then siblings; nieces/nephews;
+parents; aunts/uncles; cousins; and other modeled relatives. A spouse may receive the share required
+by local law but is not automatically a playable dynasty successor. Wills cannot bypass living
+children to favor extended relatives. Charity and charitable bequests remain deferred to Phase 10.4.
+
+Siblings, aunts/uncles, and cousins can now form named partnerships and have children, allowing
+niece, nephew, cousin, and collateral-branch succession to arise through annual play. If no playable
+relative remains, the family story ends and the estate summary explains the local heirless-estate
+outcome.
+
+**Verified:** child, grandchild, sibling, niece/nephew, cousin, and no-heir priority; preserved money,
+debts, spouse, children, health, career, credentials, languages, citizenship, and family relations;
+three deaths with two inheritances; same-generation branch switches; funeral costs; complete debt
+deduction; succession history; and the absence of charitable will options before Phase 10.4.
+
 ## Phase 10.4 — Religion, Belief, Charity, and Religious Legacy
 
 **Status: planned.** Add a Religion tab. Keep public religious identity, private belief, observance,

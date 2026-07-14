@@ -46,7 +46,7 @@ export default function SaveManager({ state, onLoad, onNotice, revision = 0 }) {
     <button onClick={() => fileRef.current?.click()}>Import JSON</button>
     {saves.length === 0 ? <p className="muted">No saves yet. {getSaveSettings().autosaveInterval===0?'Autosaving is currently disabled.':`Autosaving runs every ${getSaveSettings().autosaveInterval} year${getSaveSettings().autosaveInterval===1?'':'s'} and retains three rolling copies.`}</p> :
       <div className="save-list" aria-label="Saved lives">{saves.map(s => <div className="save-row" key={s.key}>
-        <div><strong>{s.name}</strong><div className="muted">Age {s.age} · {s.country} · generation {s.generation} · {new Date(s.savedAt).toLocaleString()}</div></div>
+        <div><strong>{s.name}</strong><div className="muted">Age {s.age} · {s.country} · succession {s.successionNumber||s.generation} · {new Date(s.savedAt).toLocaleString()}</div></div>
         <div className="save-actions"><button onClick={() => load(s.key)}>Load</button><button aria-label={confirmDelete===s.key?`Confirm deletion of ${s.name}`:`Delete ${s.name}`} onClick={() => remove(s.key)}>{confirmDelete===s.key?'Confirm deletion':'Delete'}</button></div>
       </div>)}</div>}
   </section>;

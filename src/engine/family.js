@@ -5,11 +5,13 @@ import { ensureExperience, initExperience } from './experience.js';
 import { canMarry, isSameSexCouple, relationshipLawProfile } from './relationshipLaws.js';
 import { applyMarriageName, displayName, generateRelatedName, hydrateNames } from './names.js';
 import { ensureMemberEconomy, resolveHouseholdEconomy } from './household.js';
+import { makeRng } from './rng.js';
 
 function clamp(v) { return Math.max(0, Math.min(100, v)); }
 function pickDistribution(rng, list, fallback) { return list?.length ? rng.weighted(list, x => x.pct || 1).name : fallback; }
 const TRAITS = ['ambitious','caring','independent','social','cautious','creative','resilient','curious'];
 function traits(rng) { return [...new Set([rng.pick(TRAITS), rng.pick(TRAITS)])]; }
+function collateralRng(ch,p){let h=2166136261;for(const c of `${p.id}-${ch.age}-collateral`){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return makeRng(h>>>0);}
 export function personAge(ch, person) { return Math.max(0, ch.age - person.ageOffset); }
 
 function ensurePhase10(ch) {
@@ -118,12 +120,36 @@ function resolveChildDevelopment(ch, p, country, rng, housing, logs) {
   }
   if (age >= 18) {
     if (!p.career && rng.chance(.42+country.incomeTier*.06)) { p.career=p.educationPerformance>=70?'professional-track work':p.finances?.sector==='industrial'?'skilled trade':'general work'; logs.push(`${p.name||`Child ${p.childNumber}`} began ${p.career}.`); }
-    if (age>=20 && p.partnerStatus==='single' && rng.chance(.12)) { p.partnerStatus='partnered'; logs.push(`${p.name||`Child ${p.childNumber}`} entered a serious relationship.`); }
-    if (age>=22 && p.partnerStatus==='partnered' && rng.chance(.12)) { p.partnerStatus='married'; logs.push(`${p.name||`Child ${p.childNumber}`} married.`); }
-    if (age>=22 && ['partnered','married'].includes(p.partnerStatus) && rng.chance(Math.min(.18,(country.fertility||2)/18))) { const grandchild={id:`grandchild-${p.id}-${(p.grandchildren||[]).length+1}`,relation:'Grandchild',alive:true,sex:rng.chance(.5)?'male':'female',ageOffset:ch.age,countryId:country.id,relationshipScore:65};generateRelatedName(rng,country,grandchild,ch,{familyName:p.identity?.familyName});p.grandchildren||=[];p.grandchildren.push(grandchild);p.ownChildren=p.grandchildren.length;logs.push(`${displayName(p)} had ${displayName(grandchild)}; you became a grandparent.`); }
+    if (age>=20 && p.partnerStatus==='single' && rng.chance(.12)) {
+      const detail=collateralRng(ch,p);p.partnerStatus='partnered';const partnerAge=Math.max(18,age+detail.int(-4,4));
+      p.partner={id:`partner-${p.id}`,relation:'Partner',alive:true,sex:detail.chance(.82)?(p.sex==='male'?'female':'male'):p.sex,ageOffset:ch.age-partnerAge,countryId:country.id,residenceCountryId:country.id,citizenships:[country.id],relationshipScore:65,personality:traits(detail)};
+      generateRelatedName(detail,country,p.partner,p,{familyName:''});logs.push(`${p.name||`Child ${p.childNumber}`} entered a serious relationship with ${displayName(p.partner)}.`);
+    }
+    if (age>=22 && p.partnerStatus==='partnered' && rng.chance(.12)) { p.partnerStatus='married';p.spouse={...p.partner,relation:'Spouse'};p.partner=null;logs.push(`${p.name||`Child ${p.childNumber}`} married ${displayName(p.spouse)}.`); }
+    if (age>=22 && ['partnered','married'].includes(p.partnerStatus) && rng.chance(Math.min(.18,(country.fertility||2)/18))) {
+      const detail=collateralRng(ch,p),grandchild={id:`grandchild-${p.id}-${(p.grandchildren||[]).length+1}`,relation:'Grandchild',alive:true,sex:rng.chance(.5)?'male':'female',ageOffset:ch.age,countryId:country.id,residenceCountryId:country.id,citizenships:[country.id],relationshipScore:65,stats:{health:65+detail.int(-8,8),happiness:58+detail.int(-6,6),intelligence:50+detail.int(-9,9),fitness:50+detail.int(-8,8),charisma:48+detail.int(-8,8)},experience:initExperience(),educationPerformance:50,credentials:[],healthConditions:[],personalSavings:0,grandchildren:[]};
+      generateRelatedName(detail,country,grandchild,ch,{familyName:p.identity?.familyName});p.grandchildren||=[];p.grandchildren.push(grandchild);p.ownChildren=p.grandchildren.length;logs.push(`${displayName(p)} had ${displayName(grandchild)}; you became a grandparent.`);
+    }
     const moveChance=Math.max(0,.04+(age-20)*.025+(p.working?.08:0)+(p.personalSavings>medianWage(country)*.6?.08:0)+housing.adultChildContributionRate*.2);
     if(p.atHome!==false&&rng.chance(Math.min(.65,moveChance))){p.atHome=false;logs.push(`${p.name||`Child ${p.childNumber}`} moved out of the household.`);}
   }
+}
+
+function resolveCollateralDevelopment(ch,p,country,rng,logs){
+  const age=personAge(ch,p);if(age<18)return;
+  p.children||=[];
+  if(!p.partnerStatus&&age>=20&&rng.chance(.07)){
+    p.partnerStatus='partnered';const partnerAge=Math.max(18,age+rng.int(-5,5));
+    p.partner={id:`partner-${p.id}`,relation:'Partner',alive:true,sex:rng.chance(.82)?(p.sex==='male'?'female':'male'):p.sex,ageOffset:ch.age-partnerAge,countryId:country.id,residenceCountryId:country.id,citizenships:[country.id],relationshipScore:62,personality:traits(rng)};
+    generateRelatedName(rng,country,p.partner,p,{familyName:''});logs.push(`${displayName(p)} entered a serious relationship with ${displayName(p.partner)}.`);
+  }
+  if(p.partnerStatus==='partnered'&&age>=22&&rng.chance(.1)){p.partnerStatus='married';p.spouse={...p.partner,relation:'Spouse'};p.partner=null;logs.push(`${displayName(p)} married ${displayName(p.spouse)}.`);}
+  if(['partnered','married'].includes(p.partnerStatus)&&age>=22&&age<=48&&p.children.length<4&&rng.chance(Math.min(.12,(country.fertility||2)/24))){
+    const relation=p.relation==='Sibling'?'Niece/Nephew':['Aunt','Uncle','Aunt/Uncle'].includes(p.relation)?'Cousin':'Relative';
+    const child={id:`relative-child-${p.id}-${p.children.length+1}`,relation,alive:true,sex:rng.chance(.5)?'male':'female',ageOffset:ch.age,countryId:country.id,residenceCountryId:country.id,citizenships:[country.id],relationshipScore:55,stats:{health:68+rng.int(-8,8),happiness:58+rng.int(-7,7),intelligence:50+rng.int(-9,9),fitness:50+rng.int(-8,8),charisma:48+rng.int(-8,8)},experience:initExperience(),educationPerformance:50,credentials:[],healthConditions:[],personalSavings:0,children:[]};
+    generateRelatedName(rng,country,child,ch,{familyName:p.identity?.familyName});p.children.push(child);logs.push(`${displayName(p)} had ${displayName(child)}, adding a ${relation.toLowerCase()} to your family tree.`);
+  }
+  for(const child of p.children){const childAge=personAge(ch,child);if(child.alive&&childAge>50&&rng.chance(Math.min(.3,.002*Math.exp(.075*(childAge-50))))){child.alive=false;logs.push(`${displayName(child)} died at age ${childAge}.`);}}
 }
 
 function resolvePregnancy(ch,country,rng,logs,expenses) {
@@ -171,6 +197,7 @@ export function resolveFamily(ch,country,rng){
   for(const p of ch.family||[]){
     if(!p.alive)continue;const age=personAge(ch,p);
     if(p.relation==='Child')resolveChildDevelopment(ch,p,country,rng,housing,logs);
+    else if(['Sibling','Aunt','Uncle','Aunt/Uncle','Cousin'].includes(p.relation))resolveCollateralDevelopment(ch,p,country,collateralRng(ch,p),logs);
     else if(p.relationshipScore!=null&&!social)p.relationshipScore=clamp(p.relationshipScore-2);
     if(age>50&&rng.chance(Math.min(.35,.002*Math.exp(.075*(age-50))))){p.alive=false;logs.push(`Your ${p.relation.toLowerCase()} died at age ${age}.`);continue;}
     if(['Father','Mother'].includes(p.relation)&&age>=70&&!p.needsCare&&rng.chance(.08+(p.disabled?.1:0))){p.needsCare=true;logs.push(`Your ${p.relation.toLowerCase()} now needs regular care.`);}
