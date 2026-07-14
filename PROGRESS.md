@@ -7,7 +7,7 @@ Handoff notes for whoever continues this build (see `START_HERE.txt` first, then
 ### Post-Phase-10 identity and routine polish
 
 - Renamed the public product, package, documentation, exports, saves, workflow, and Credits to
-  **Cheb's Human Atlas**. The existing GitHub repository slug remains the deployment address.
+  **Cheb's Human Atlas**. The GitHub Pages deployment uses the `Chebs-Human-Atlas` repository slug.
 - Activities now persist as a yearly routine. Situation changes remove unavailable selections and
   trim only excess slots, while additional slots remain open for the player to fill.
 

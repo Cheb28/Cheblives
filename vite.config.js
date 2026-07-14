@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  base: '/Cheblives/',
+  base: '/Chebs-Human-Atlas/',
   plugins: [react()],
   build: {
     rollupOptions: {
