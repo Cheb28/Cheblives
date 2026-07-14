@@ -23,6 +23,7 @@ export default function Family({ state, refresh }) {
   ch.safety ||= {concern:false};
   const relatives=(ch.family||[]).filter(p=>p.relation!=='Child'),children=(ch.family||[]).filter(p=>p.relation==='Child');
   const friends=(ch.social.friends||[]).filter(f=>f.alive),housing=ensureHousing(ch),approvalNeeded=needsHusbandWorkApproval(ch,country);
+  const financePeople=[...(ch.spouse?.alive?[ch.spouse]:[]),...(ch.family||[]).filter(p=>p.alive)];
 
   return <div className="grid cols-2">
     <div className="panel">
@@ -85,6 +86,21 @@ export default function Family({ state, refresh }) {
         {(p.grandchildren||[]).map(g=><div className="muted" key={g.id}>↳ {displayName(g)} · grandchild</div>)}
       </div>)}
       {children.length>0&&<div className="subcard"><strong>Working-child contributions</strong><label className="kv"><span>Under 18</span><select value={housing.teenContributionRate} onChange={e=>{setHouseholdContribution(state,'teen',e.target.value);refresh();}}>{[0,.1,.25,.5].map(v=><option key={v} value={v}>{v*100}%</option>)}</select></label><label className="kv"><span>Adult child at home</span><select value={housing.adultChildContributionRate} onChange={e=>{setHouseholdContribution(state,'adult',e.target.value);refresh();}}>{[0,.1,.25,.5].map(v=><option key={v} value={v}>{v*100}% board</option>)}</select></label></div>}
+    </div>
+
+    <div className="panel">
+      <h3>Household Finances & Medical Care</h3>
+      <div className="kv"><span>Family earnings into household</span><span>{money(ch.householdFinance?.familyGrossIncome||0)}</span></div>
+      <div className="kv"><span>Family medical spending</span><span>{money(ch.householdFinance?.medicalSpend||0)}</span></div>
+      <div className="kv"><span>Unmet family care needs</span><span>{ch.householdFinance?.unmetCare||0}</span></div>
+      {financePeople.map(p=><div className="subcard" key={`finance-${p.id}`}>
+        <div className="kv"><strong>{displayName(p)} · {p.relation}</strong><span>{titleCase(p.finances?.employmentStatus||'not modeled')}</span></div>
+        <div className="kv"><span>{p.finances?.occupation||'No occupation'}</span><span>{money(p.finances?.annualGrossIncome||0)} gross</span></div>
+        <div className="kv"><span>Household contribution</span><span>{money(p.finances?.householdContribution||0)}</span></div>
+        <div className="kv"><span>Personal savings</span><span>{money(p.finances?.personalSavings||0)}</span></div>
+        <div className="muted">Health {Math.round(p.health?.score??70)}/100 · {p.health?.lastYear?.status||'No care record'} · {p.health?.lastYear?.coverage||'coverage not assessed'}</div>
+      </div>)}
+      <p className="muted" style={{fontSize:11}}>Jobs, income, taxes, savings, household contributions, coverage, medical bills, and unaffordable care update once per year.</p>
     </div>
 
     <div className="panel">

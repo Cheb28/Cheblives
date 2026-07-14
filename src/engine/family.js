@@ -1,10 +1,10 @@
 import { medianWage } from './countries.js';
 import { genderRightsProfile } from './genderRights.js';
-import { laborProfile } from './labor.js';
 import { ensureHousing } from './housing.js';
 import { addSkillXp, skillLevel } from './skills.js';
 import { canMarry, isSameSexCouple, relationshipLawProfile } from './relationshipLaws.js';
 import { applyMarriageName, displayName, generateRelatedName, hydrateNames } from './names.js';
+import { ensureMemberEconomy, resolveHouseholdEconomy } from './household.js';
 
 function clamp(v) { return Math.max(0, Math.min(100, v)); }
 function pickDistribution(rng, list, fallback) { return list?.length ? rng.weighted(list, x => x.pct || 1).name : fallback; }
@@ -78,7 +78,7 @@ function makeChild(ch, country, rng, origin = 'birth') {
     stats: { health: clamp(ch.stats.health + rng.int(-10,10)), happiness:60+rng.int(-8,8), intelligence:clamp(ch.stats.intelligence+rng.int(-10,10)), fitness:50+rng.int(-10,10), charisma:45+rng.int(-10,10) },
     skills: { academic:0, vocational:0, business:0, political:0 }, atHome:true, working:false, personalSavings:0, grandchildren:[],
   };
-  return generateRelatedName(rng,country,child,ch);
+  generateRelatedName(rng,country,child,ch);ensureMemberEconomy(child,ch,country,rng);return child;
 }
 
 function resolveFriends(ch, country, rng, social, logs) {
@@ -97,19 +97,12 @@ function resolveFriends(ch, country, rng, social, logs) {
   if (!friends.some(f=>f.alive) && ch.age >= 12) ch.stats.happiness = clamp(ch.stats.happiness - 1);
 }
 
-function resolveChildDevelopment(ch, p, country, rng, housing, logs, incomes) {
+function resolveChildDevelopment(ch, p, country, rng, housing, logs) {
   const age = personAge(ch,p);
   if (p.relationshipScore != null && !(ch.selectedActivities||[]).includes('family')) p.relationshipScore=clamp(p.relationshipScore-2);
   if (age === 6) { p.educationOutcome='primary school'; logs.push(`${p.name||`Child ${p.childNumber}`} started primary school.`); }
   if (age >= 6 && age < 18) {
     addSkillXp(p,'academic',country.educationTier*.8);
-    const labor=laborProfile(country);
-    if(age>=labor.lightWorkAge&&ch.wealthIdx<=1&&rng.chance(labor.childLaborRisk)){
-      const earned=medianWage(country)*.08, contribution=earned*housing.teenContributionRate;
-      p.working=true; p.personalSavings=(p.personalSavings||0)+(earned-contribution);
-      if(contribution>0)incomes.push({label:`${p.name||`Child ${p.childNumber}`} household contribution`,amount:contribution,untaxed:true,target:'household'});
-      p.skills.academic=Math.max(0,p.skills.academic-2); logs.push(`${p.name||`Child ${p.childNumber}`} worked to support the household.`);
-    }
     if (rng.chance(.012 * (4-country.incomeTier))) { p.healthConditions.push('childhood chronic condition'); p.stats.health=clamp(p.stats.health-8); logs.push(`${p.name||`Child ${p.childNumber}`} developed a chronic health condition.`); }
   }
   if (age === 18) {
@@ -117,8 +110,7 @@ function resolveChildDevelopment(ch, p, country, rng, housing, logs, incomes) {
     logs.push(`${p.name||`Child ${p.childNumber}`} reached adulthood with ${p.educationOutcome}.`);
   }
   if (age >= 18) {
-    if (!p.career && rng.chance(.42+country.incomeTier*.06)) { p.working=true; p.wageMult=.45+rng.next()*.55; p.career=skillLevel(p.skills.academic)>=5?'professional work':skillLevel(p.skills.vocational)>=3?'skilled trade':'general work'; logs.push(`${p.name||`Child ${p.childNumber}`} began ${p.career}.`); }
-    if (p.working && p.atHome !== false) { const earned=medianWage(country)*(p.wageMult||.6),contribution=earned*housing.adultChildContributionRate;p.personalSavings=(p.personalSavings||0)+(earned-contribution);if(contribution>0)incomes.push({label:`${p.name||`Child ${p.childNumber}`} board contribution`,amount:contribution,target:'household',untaxed:true}); }
+    if (!p.career && rng.chance(.42+country.incomeTier*.06)) { p.career=skillLevel(p.skills.academic)>=5?'professional work':skillLevel(p.skills.vocational)>=3?'skilled trade':'general work'; logs.push(`${p.name||`Child ${p.childNumber}`} began ${p.career}.`); }
     if (age>=20 && p.partnerStatus==='single' && rng.chance(.12)) { p.partnerStatus='partnered'; logs.push(`${p.name||`Child ${p.childNumber}`} entered a serious relationship.`); }
     if (age>=22 && p.partnerStatus==='partnered' && rng.chance(.12)) { p.partnerStatus='married'; logs.push(`${p.name||`Child ${p.childNumber}`} married.`); }
     if (age>=22 && ['partnered','married'].includes(p.partnerStatus) && rng.chance(Math.min(.18,(country.fertility||2)/18))) { const grandchild={id:`grandchild-${p.id}-${(p.grandchildren||[]).length+1}`,relation:'Grandchild',alive:true,sex:rng.chance(.5)?'male':'female',ageOffset:ch.age,countryId:country.id,relationshipScore:65};generateRelatedName(rng,country,grandchild,ch,{familyName:p.identity?.familyName});p.grandchildren||=[];p.grandchildren.push(grandchild);p.ownChildren=p.grandchildren.length;logs.push(`${displayName(p)} had ${displayName(grandchild)}; you became a grandparent.`); }
@@ -164,16 +156,14 @@ function endMarriage(ch,country,logs,reason='divorce') {
   ch.spouse=null;ch.partner=null;ch.relationshipStatus=reason==='widowed'?'widowed':'single';ch.familyRights.workPermission=false;
 }
 
-export function spouseIncome(ch,country){return ch.spouse?.alive&&ch.spouse.working?medianWage(country)*(ch.spouse.wageMult||.8):0;}
-
 export function resolveFamily(ch,country,rng){
-  ensurePhase10(ch);hydrateNames(ch,rng);const logs=[],expenses=[],incomes=[],housing=ensureHousing(ch);
+  ensurePhase10(ch);hydrateNames(ch,rng);const household=resolveHouseholdEconomy(ch,country,rng),logs=[...household.logs],expenses=[...household.expenses],incomes=[...household.incomes],housing=ensureHousing(ch);
   const social=(ch.selectedActivities||[]).some(x=>x==='socializing'||x==='family');
   resolveFriends(ch,country,rng,social,logs);
 
   for(const p of ch.family||[]){
     if(!p.alive)continue;const age=personAge(ch,p);
-    if(p.relation==='Child')resolveChildDevelopment(ch,p,country,rng,housing,logs,incomes);
+    if(p.relation==='Child')resolveChildDevelopment(ch,p,country,rng,housing,logs);
     else if(p.relationshipScore!=null&&!social)p.relationshipScore=clamp(p.relationshipScore-2);
     if(age>50&&rng.chance(Math.min(.35,.002*Math.exp(.075*(age-50))))){p.alive=false;logs.push(`Your ${p.relation.toLowerCase()} died at age ${age}.`);continue;}
     if(['Father','Mother'].includes(p.relation)&&age>=70&&!p.needsCare&&rng.chance(.08+(p.disabled?.1:0))){p.needsCare=true;logs.push(`Your ${p.relation.toLowerCase()} now needs regular care.`);}

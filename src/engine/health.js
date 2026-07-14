@@ -94,7 +94,10 @@ export function healthcareCoverage(country, ch) {
   if (arch === 'single-payer') return { premium: 0, treatmentShare: 0, qualityTier: tier, access: 0.75 + tier * 0.05, label: 'Universal (single-payer)' };
   if (arch === 'universal-insurance') return { premium: 0.05, treatmentShare: 0.1, qualityTier: tier, access: 0.78 + tier * 0.05, label: 'Universal insurance' };
   if (arch === 'mixed') {
-    if (ch.health.insured) return { premium: 0.08, treatmentShare: 0.15, qualityTier: tier, access: 0.75 + tier * 0.05, label: 'Insured (private)' };
+    const dependentCoverage=(ch.age<18||ch.employmentStatus==='student')&&ch.family?.some(p=>
+      p.alive!==false&&['Father','Mother','Spouse'].includes(p.relation)&&p.health?.insured
+    );
+    if (ch.health.insured||dependentCoverage) return { premium: 0.08, treatmentShare: 0.15, qualityTier: tier, access: 0.75 + tier * 0.05, label: dependentCoverage&&!ch.health.insured?'Covered as a dependant':'Insured (private)' };
     return { premium: 0, treatmentShare: 1, qualityTier: Math.max(1, tier - 1), access: 0.45 + tier * 0.06, label: 'Uninsured' };
   }
   return { premium: 0, treatmentShare: 1, qualityTier: Math.min(tier, 2), access: 0.35 + tier * 0.08, label: 'Out-of-pocket' };
@@ -111,8 +114,14 @@ function treatmentCost(country, severity) {
 }
 
 function availableFunds(ch, country) {
-  if (ch.age < 18 || ch.employmentStatus === 'student') return medianWage(country) * (0.6 + (ch.wealthIdx ?? 2) * 1.2);
-  return (ch.money.cash || 0) + (ch.money.bank || 0) + (ch.money.household || 0);
+  const pooled=(ch.money.cash||0)+(ch.money.bank||0)+(ch.money.household||0)+(ch.householdFinance?.familyGrossIncome||0);
+  if (ch.age < 18 || ch.employmentStatus === 'student') {
+    const familySupport=ch.housing?.tenure==='parents'?(ch.familyOriginFinance?.retainedFund||0):0;
+    if(pooled+familySupport>0)return pooled+familySupport;
+    // Compatibility fallback for isolated health tests and older saves before their first family turn.
+    if(!ch.householdFinance)return medianWage(country)*(0.6+(ch.wealthIdx??2)*1.2);
+  }
+  return pooled;
 }
 
 function tryTreat(ch, country, severity, rng) {
@@ -125,7 +134,7 @@ function tryTreat(ch, country, severity, rng) {
   const willTreat = policy === 'always' ? affordable : policy === 'affordable' && playerCost <= funds;
   if (!willTreat || !rng.chance(cov.access)) return { treated: false, success: false, cost: 0, billed: false, coverage: cov.label, accessFailed: willTreat };
   const success = rng.chance(0.48 + cov.qualityTier * 0.115);
-  return { treated: true, success, cost: playerCost, billed: !dependent, coverage: cov.label, accessFailed: false };
+  return { treated: true, success, cost: playerCost, billed: playerCost > 0, dependent, coverage: cov.label, accessFailed: false };
 }
 
 function record(ch, text, category = 'diagnosis') {
@@ -178,12 +187,11 @@ function resolveChronic(ch, country, rng, cov, logs) {
   for (const c of ch.health.conditions) {
     if (!c.chronic) continue;
     c.years += 1;
-    const dependent = ch.age < 18 || ch.employmentStatus === 'student';
     const mgmt = c.mgmtCost * medianWage(country) * cov.treatmentShare * (0.75 + c.severity * 0.25);
     const canManage = ch.health.healthPolicy !== 'never' && mgmt <= availableFunds(ch, country) && rng.chance(cov.access);
     c.controlled = canManage;
     if (canManage) {
-      if (!dependent) costs += mgmt;
+      if (mgmt > 0) costs += mgmt;
       ch.stats.health = clamp(ch.stats.health - c.decay * c.severity * 0.25);
       if (c.severity > 1 && rng.chance(0.06 * cov.qualityTier)) c.severity -= 1;
     } else {

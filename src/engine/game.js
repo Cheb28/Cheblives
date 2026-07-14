@@ -6,6 +6,7 @@ import { advanceYear } from './advance.js';
 import { settleEstate } from './inheritance.js';
 import { COUNTRY_BY_ID } from './countries.js';
 import { displayName, hydrateNames } from './names.js';
+import { initializeFamilyEconomy } from './household.js';
 
 // Create a fresh game. options passed through to createCharacter.
 // If options.seed omitted, a random one is generated (kept for reproducibility).
@@ -55,6 +56,7 @@ export function serialize(state) {
 export function deserialize(data) {
   const rng = makeRng(data.rngState ?? data.seed);
   hydrateNames(data.character, rng);
+  initializeFamilyEconomy(data.character, COUNTRY_BY_ID[data.character.countryId], rng);
   return { ...data, rng };
 }
 

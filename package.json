@@ -9,7 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "data": "node scripts/build-countries.mjs",
-    "test": "node scripts/regression-test.mjs && node scripts/sim-test.mjs && node scripts/sim-test2.mjs && node scripts/sim-test3.mjs && node scripts/sim-test4.mjs && node scripts/sim-test5.mjs && node scripts/health-expansion-test.mjs && node scripts/sim-test6.mjs && node scripts/sim-test7.mjs && node scripts/sim-test8.mjs && node scripts/sim-test9.mjs && node scripts/sim-test10.mjs && node scripts/sim-test10-1.mjs"
+    "test": "node scripts/regression-test.mjs && node scripts/sim-test.mjs && node scripts/sim-test2.mjs && node scripts/sim-test3.mjs && node scripts/sim-test4.mjs && node scripts/sim-test5.mjs && node scripts/health-expansion-test.mjs && node scripts/sim-test6.mjs && node scripts/sim-test7.mjs && node scripts/sim-test8.mjs && node scripts/sim-test9.mjs && node scripts/sim-test10.mjs && node scripts/sim-test10-1.mjs && node scripts/sim-test10-1-1.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

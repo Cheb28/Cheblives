@@ -36,6 +36,17 @@ export default function Finances({ state, refresh }) {
       </div>
 
       <div className="panel" style={{ marginTop: 12 }}>
+        <h3>Family Economy</h3>
+        <div className="kv"><span className="k">Family members employed</span><span className="v">{ch.householdFinance?.employed||0}</span></div>
+        <div className="kv"><span className="k">Family earnings paid into household</span><span className="v">{money(ch.householdFinance?.familyGrossIncome||0)}</span></div>
+        <div className="kv"><span className="k">Family medical costs</span><span className="v">−{money(ch.householdFinance?.medicalSpend||0)}</span></div>
+        <div className="kv"><span className="k">Unmet family care needs</span><span className="v">{ch.householdFinance?.unmetCare||0}</span></div>
+        <div className="kv"><span className="k">Family members' separate savings</span><span className="v">{money(ch.householdFinance?.totalFamilySavings||0)}</span></div>
+        {ch.familyOriginFinance?.settled&&<><div className="kv"><span className="k">Family-of-origin fund retained by parents</span><span className="v">{money(ch.familyOriginFinance.retainedFund||0)}</span></div><div className="kv"><span className="k">Adult-life starting gift received</span><span className="v">{money(ch.familyOriginFinance.launchGift||0)}</span></div></>}
+        <p className="muted" style={{fontSize:11}}>The annual statement lists each contributing family member and household-paid medical bill separately.</p>
+      </div>
+
+      <div className="panel" style={{ marginTop: 12 }}>
         <h3>Investments</h3>
         <label className="muted" style={{ fontSize: 12 }}>Transaction amount <input type="number" min="1" value={amount} onChange={e => setAmount(Number(e.target.value))} style={{ width: 110, marginLeft: 8 }} /></label>
         {Object.entries(INVESTMENTS).map(([id, d]) => {

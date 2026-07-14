@@ -94,6 +94,23 @@ legal name changes depend on country eligibility, procedure, restrictions, and c
 single- and multinational country profiles. Manual player and child names persist through saves,
 marriage, migration, divorce, death, and heir continuation.
 
+## Phase 10.1.1 — Household Economy and Family Healthcare
+
+**Status: complete.** Parents, siblings, spouses, and children have persistent employment states,
+occupations, annual earnings, household contributions, personal savings, health, coverage, and care
+histories. Provider income, dependent living costs, insurance premiums, treatment bills, and unmet
+care appear in the household statement and family-finance summaries. A dependent player's medical
+care uses actual household earnings and funds, including parental insurance coverage where the
+country model permits it.
+
+Family-of-origin finances separate when the player reaches adulthood: parents retain their fund,
+may provide a limited launch gift, and can offer bounded support while the player still lives at
+home. Their assets do not automatically become the adult player's net worth.
+
+**Verified:** family income and healthcare reconcile in annual statements; funded care is treated
+and billed, unaffordable care is reported as unmet, dependent coverage works, adulthood does not
+transfer the parents' fund, and all records survive save/export and restoration.
+
 ## Phase 10.2 — Interactive Map and Country Information
 
 **Status: planned.** Add a lazy-loaded MapLibre map using an appropriate CARTO/OpenStreetMap
@@ -178,7 +195,7 @@ bundle warning; and GitHub Pages works without console, attribution, or accessib
 ## Deferred / non-goals (do not build unless asked)
 
 Additional optional depth is tracked in `EXPANSION_BACKLOG.md`. The original nine-phase playable
-roadmap and Phase 10 are complete. Phases 10.1–10.5 are planned personalization expansions; the
+roadmap and Phase 10 are complete. Phases 10.1 and 10.1.1 are complete; Phases 10.2–10.5 are planned personalization expansions; the
 annual employment expansion remains reserved as Phase 11.
 
 Multiplayer, real exchange rates, sub-national regions, deep social simulation, achievements/meta-progression, mobile layout (desktop-first; keep it responsive-friendly but don't invest), localization.

@@ -2,7 +2,20 @@
 
 Handoff notes for whoever continues this build (see `START_HERE.txt` first, then `docs/`).
 
-## Current status: Phase 10.1 COMPLETE — Names and Legal Identity
+## Current status: Phase 10.1.1 COMPLETE — Household Economy and Family Healthcare
+
+### Phase 10.1.1 — Household Economy and Family Healthcare
+
+- Parents, siblings, spouses, and children now have persistent jobs, employment states, annual
+  income, household contributions, personal savings, health conditions, coverage, and care records.
+- Family earnings, dependent living costs, insurance premiums, medical bills, and unmet care are
+  included in the actual annual household statement and summarized in Family and Finances.
+- Dependent player healthcare now uses real household resources and can inherit parental coverage;
+  treatment costs are no longer silently discarded for children or students.
+- Family-of-origin funds remain the parents' property at adulthood, with only a bounded launch gift
+  and limited support while living at home, preventing a parent's savings from becoming player wealth.
+- Added save migration and Phase 10.1.1 regression coverage for funded and unaffordable care,
+  statement balancing, adulthood separation, and record persistence.
 
 ### Phase 10.1 — Names and Legal Identity
 

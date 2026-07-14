@@ -16,7 +16,7 @@ import {
 } from './economy.js';
 import { resolveHealth, hasSeriousUntreated, mortalityConditionRisk, likelyMedicalCause } from './health.js';
 import { rollEvents, resolveDecision } from './events.js';
-import { resolveFamily, spouseIncome } from './family.js';
+import { resolveFamily } from './family.js';
 import { teenPartTimeIncome } from './labor.js';
 import { resolveInvestments, investmentValue } from './investments.js';
 import { resolveBusiness } from './business.js';
@@ -413,8 +413,6 @@ export function advanceYear(state) {
   const biz = resolveBusiness(ch, country, rng);
   for (const l of biz.logs) log.push(l);
   if (Math.abs(biz.income) >= 1) incomeLines.push({ label: 'Business value change', amount: biz.income, nonCash: true });
-  const spousePay = spouseIncome(ch, country);
-  if (spousePay > 0) incomeLines.push({ label: 'Spouse income', amount: spousePay, target: 'household' });
   // Layered social insurance and means-tested safety-net benefits.
   const earnedIncome = incomeLines.filter(x => !x.untaxed && !x.nonCash).reduce((s, x) => s + x.amount, 0);
   incomeLines.push(...evaluateBenefits(ch, country, { earnedIncome }));
@@ -426,7 +424,7 @@ export function advanceYear(state) {
   const extraExpenses = [];
   extraExpenses.push(...family.expenses);
   if (hctx.insuranceLine) extraExpenses.push(hctx.insuranceLine);
-  if (health.medicalCosts > 0) extraExpenses.push({ label: 'Medical costs', amount: health.medicalCosts });
+  if (health.medicalCosts > 0) extraExpenses.push({ label: 'Medical costs', amount: health.medicalCosts, household: ch.age < 18 || ch.employmentStatus === 'student' });
 
   const fin = resolveFinances(ch, country, rng, incomeLines, log, extraExpenses);
   if ((ch.job && ch.job.sector !== 'informal') || ch.military.status === 'career') ch.benefits.contributionYears += 1;
