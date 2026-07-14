@@ -5,6 +5,7 @@ import { createCharacter } from './character.js';
 import { advanceYear } from './advance.js';
 import { settleEstate } from './inheritance.js';
 import { COUNTRY_BY_ID } from './countries.js';
+import { displayName, hydrateNames } from './names.js';
 
 // Create a fresh game. options passed through to createCharacter.
 // If options.seed omitted, a random one is generated (kept for reproducibility).
@@ -20,7 +21,7 @@ export function newGame(options = {}) {
     rng,
     character,
     year: 0,
-    log: [{ age: 0, lines: [`Born in ${character.location.name}, ${character.countryName}.`] }],
+    log: [{ age: 0, lines: [`Born as ${displayName(character)} in ${character.location.name}, ${character.countryName}.`] }],
     over: false,
     generation: 1,
     estate: null,
@@ -53,6 +54,7 @@ export function serialize(state) {
 // Restore a game from serialized data.
 export function deserialize(data) {
   const rng = makeRng(data.rngState ?? data.seed);
+  hydrateNames(data.character, rng);
   return { ...data, rng };
 }
 
@@ -69,6 +71,8 @@ export function continueAsHeir(state, childId) {
   });
   const age = Math.max(0, parent.age - child.ageOffset);
   heir.age = age;
+  heir.identity = structuredClone(child.identity);
+  heir.name = child.name;
   heir.stats = { ...child.stats };
   heir.skills = { ...child.skills };
   heir.money.bank = inheritance;
@@ -86,7 +90,8 @@ export function continueAsHeir(state, childId) {
   heir.family.push({
     id: 'deceased-parent', relation: parent.sex === 'male' ? 'Father' : 'Mother', sex: parent.sex,
     alive: false, ageOffset: -child.ageOffset, relationshipScore: 70,
-    ethnicity: parent.ethnicity, religion: parent.religion, name: null,
+    ethnicity: parent.ethnicity, religion: parent.religion, name: parent.name,
+    identity: structuredClone(parent.identity),
   });
   if (age < 6) { heir.education.stage = 'preschool'; heir.employmentStatus = 'child'; }
   else if (age < 12) { heir.education.stage = 'primary'; heir.education.enrolled = true; heir.employmentStatus = 'child'; }
@@ -94,7 +99,7 @@ export function continueAsHeir(state, childId) {
   else { heir.education.stage = 'secondary_done'; heir.employmentStatus = 'unemployed'; }
   return {
     seed: state.seed, rngState: rng.state, rng, character: heir, year: state.year,
-    log: [{ age, lines: [`Continued the family story as a child of the previous character, inheriting ${Math.round(inheritance).toLocaleString()}.`] }],
+    log: [{ age, lines: [`Continued the family story as ${displayName(heir)}, a child of ${displayName(parent)}, inheriting ${Math.round(inheritance).toLocaleString()}.`] }],
     over: false, generation: (state.generation || 1) + 1, estate: null,
   };
 }

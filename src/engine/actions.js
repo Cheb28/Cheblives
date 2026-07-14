@@ -11,6 +11,7 @@ import { medianWage } from './countries.js';
 import { submitMigration, naturalize, isIrregular, visaWorkFraction } from './immigration.js';
 import { clearPlannedCrime, planCrime } from './judicial.js';
 import { applyForSocialHousing, chooseHousing, homePrice, setChildContributionPolicy } from './housing.js';
+import { marriageNameChoices, requestLegalNameChange, setChildName, setNickname, setPreferredName } from './names.js';
 
 export function setActivities(state, ids) { state.character.selectedActivities = ids; }
 export function setLifestyle(state, ls) { state.character.lifestyle = ls; }
@@ -45,6 +46,7 @@ export function proposeMarriage(state) {
   return false;
 }
 export function planMarriage(state) { const ch=state.character;if(ch.partner?.engaged){ch.marriageIntent=true;return true;}return false; }
+export function setMarriageNameChoice(state, choice) { const ch=state.character,country=COUNTRY_BY_ID[ch.countryId];if(!ch.partner?.engaged)return false;const allowed=marriageNameChoices(ch,ch.partner,country).some(x=>x.id===choice);if(allowed)ch.identity.pendingMarriageChoice=choice;return allowed; }
 export function endPartnership(state) { const ch=state.character;if(ch.partner||ch.spouse){ch.separationIntent=true;return true;}return false; }
 export function requestDivorce(state) { const ch=state.character;if(ch.spouse?.alive){ch.divorceIntent=true;return true;}return false; }
 export function setChildrenIntent(state, intent) { state.character.childrenIntent = intent; }
@@ -57,6 +59,10 @@ export function requestReconciliation(state, personId) { state.character.familyP
 export function seekDomesticHelp(state) { const ch=state.character;if(ch.safety?.concern){ch.safety.seekHelpIntent=true;return true;}return false; }
 export function leaveUnsafeHome(state) { const ch=state.character;if(ch.safety?.concern){ch.safety.leaveIntent=true;return true;}return false; }
 export function setHouseholdContribution(state, group, rate) { setChildContributionPolicy(state.character, group, rate); return true; }
+export function updatePreferredName(state, value) { return setPreferredName(state.character,value); }
+export function updateNickname(state, value) { return setNickname(state.character,value); }
+export function changeLegalName(state, value) { const ch=state.character;return requestLegalNameChange(ch,COUNTRY_BY_ID[ch.countryId],value); }
+export function nameChild(state, id, value) { const ch=state.character;return setChildName(ch,id,value,COUNTRY_BY_ID[ch.countryId]); }
 export function requestSocialHousing(state) { const ch=state.character; return applyForSocialHousing(ch,COUNTRY_BY_ID[ch.countryId]); }
 export function setHousingTenure(state, tenure) { const ch=state.character; return chooseHousing(ch,COUNTRY_BY_ID[ch.countryId],tenure); }
 export function requestWorkPermission(state) { state.character.familyRights.requestWorkPermission = true; }

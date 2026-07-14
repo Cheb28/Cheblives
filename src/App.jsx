@@ -109,7 +109,7 @@ export default function App() {
       <TabBar active={tab} onChange={setTab} badges={badges} />
       <div className="content">
         <Suspense fallback={<div className="loading" role="status">Loading screen…</div>}>
-        {tab === 'overview' && <Overview state={state} saveTools={saveTools} />}
+        {tab === 'overview' && <Overview state={state} saveTools={saveTools} refresh={refresh} />}
         {tab === 'activities' && <Activities {...tabProps} />}
         {tab === 'finances' && <Finances {...tabProps} />}
         {tab === 'career' && <Career {...tabProps} />}

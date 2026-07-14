@@ -4,6 +4,7 @@ import { laborProfile } from './labor.js';
 import { ensureHousing } from './housing.js';
 import { addSkillXp, skillLevel } from './skills.js';
 import { canMarry, isSameSexCouple, relationshipLawProfile } from './relationshipLaws.js';
+import { applyMarriageName, displayName, generateRelatedName, hydrateNames } from './names.js';
 
 function clamp(v) { return Math.max(0, Math.min(100, v)); }
 function pickDistribution(rng, list, fallback) { return list?.length ? rng.weighted(list, x => x.pct || 1).name : fallback; }
@@ -38,6 +39,7 @@ function makePartner(ch, country, rng) {
     working: false, engaged: false, conflictLevel: rng.int(0, 12),
     countryId: country.id, residenceCountryId: country.id, citizenships: [country.id],
   };
+  generateRelatedName(rng,country,partner,ch,{familyName:''});
   partner.compatibility = compatibilityScore(ch, partner);
   return partner;
 }
@@ -64,7 +66,7 @@ function spouseWork(ch, country, rng, spouse) {
 function makeChild(ch, country, rng, origin = 'birth') {
   const n = (ch.family || []).filter(p => p.relation === 'Child').length + 1;
   const citizenships = [...new Set([...(ch.immigration?.citizenships || [ch.countryId]), ...(ch.spouse?.citizenships || ch.partner?.citizenships || []), ...(country.citizenship?.jusSoli ? [country.id] : [])])];
-  return {
+  const child = {
     id: `child-${ch.age}-${n}`, relation: 'Child', childNumber: n, name: null, alive: true,
     sex: rng.chance(.5) ? 'male' : 'female', ageOffset: ch.age,
     ethnicity: origin === 'birth' && rng.chance(.8) ? ch.ethnicity : pickDistribution(rng, country.ethnicGroups, ch.ethnicity),
@@ -74,15 +76,16 @@ function makeChild(ch, country, rng, origin = 'birth') {
     educationOutcome: 'not school age', career: null, partnerStatus: 'single', ownChildren: 0,
     healthConditions: [], favoritism: 'neutral', estranged: false,
     stats: { health: clamp(ch.stats.health + rng.int(-10,10)), happiness:60+rng.int(-8,8), intelligence:clamp(ch.stats.intelligence+rng.int(-10,10)), fitness:50+rng.int(-10,10), charisma:45+rng.int(-10,10) },
-    skills: { academic:0, vocational:0, business:0, political:0 }, atHome:true, working:false, personalSavings:0,
+    skills: { academic:0, vocational:0, business:0, political:0 }, atHome:true, working:false, personalSavings:0, grandchildren:[],
   };
+  return generateRelatedName(rng,country,child,ch);
 }
 
 function resolveFriends(ch, country, rng, social, logs) {
   const friends = ch.social.friends;
   if (ch.social.friendIntent && ch.age >= 6 && rng.chance(.35 + ch.stats.charisma / 300)) {
-    const friend = { id:`friend-${ch.age}-${friends.length}`, relation:'Friend', alive:true, ageOffset:rng.int(-3,3), relationshipScore:55+rng.int(0,20), personality:traits(rng), yearsKnown:0, countryId:country.id };
-    friends.push(friend); logs.push('You formed a new friendship.');
+    const friend = { id:`friend-${ch.age}-${friends.length}`, relation:'Friend', alive:true, sex:rng.chance(.5)?'male':'female', ageOffset:rng.int(-3,3), relationshipScore:55+rng.int(0,20), personality:traits(rng), yearsKnown:0, countryId:country.id };
+    generateRelatedName(rng,country,friend,ch,{familyName:''});friends.push(friend); logs.push(`You became friends with ${displayName(friend)}.`);
   }
   ch.social.friendIntent = false;
   for (const f of friends) {
@@ -118,7 +121,7 @@ function resolveChildDevelopment(ch, p, country, rng, housing, logs, incomes) {
     if (p.working && p.atHome !== false) { const earned=medianWage(country)*(p.wageMult||.6),contribution=earned*housing.adultChildContributionRate;p.personalSavings=(p.personalSavings||0)+(earned-contribution);if(contribution>0)incomes.push({label:`${p.name||`Child ${p.childNumber}`} board contribution`,amount:contribution,target:'household',untaxed:true}); }
     if (age>=20 && p.partnerStatus==='single' && rng.chance(.12)) { p.partnerStatus='partnered'; logs.push(`${p.name||`Child ${p.childNumber}`} entered a serious relationship.`); }
     if (age>=22 && p.partnerStatus==='partnered' && rng.chance(.12)) { p.partnerStatus='married'; logs.push(`${p.name||`Child ${p.childNumber}`} married.`); }
-    if (age>=22 && ['partnered','married'].includes(p.partnerStatus) && rng.chance(Math.min(.18,(country.fertility||2)/18))) { p.ownChildren=(p.ownChildren||0)+1; logs.push(`${p.name||`Child ${p.childNumber}`} had a child; you became a grandparent.`); }
+    if (age>=22 && ['partnered','married'].includes(p.partnerStatus) && rng.chance(Math.min(.18,(country.fertility||2)/18))) { const grandchild={id:`grandchild-${p.id}-${(p.grandchildren||[]).length+1}`,relation:'Grandchild',alive:true,sex:rng.chance(.5)?'male':'female',ageOffset:ch.age,countryId:country.id,relationshipScore:65};generateRelatedName(rng,country,grandchild,ch,{familyName:p.identity?.familyName});p.grandchildren||=[];p.grandchildren.push(grandchild);p.ownChildren=p.grandchildren.length;logs.push(`${displayName(p)} had ${displayName(grandchild)}; you became a grandparent.`); }
     const moveChance=Math.max(0,.04+(age-20)*.025+(p.working?.08:0)+(p.personalSavings>medianWage(country)*.6?.08:0)+housing.adultChildContributionRate*.2);
     if(p.atHome!==false&&rng.chance(Math.min(.65,moveChance))){p.atHome=false;logs.push(`${p.name||`Child ${p.childNumber}`} moved out of the household.`);}
   }
@@ -164,7 +167,7 @@ function endMarriage(ch,country,logs,reason='divorce') {
 export function spouseIncome(ch,country){return ch.spouse?.alive&&ch.spouse.working?medianWage(country)*(ch.spouse.wageMult||.8):0;}
 
 export function resolveFamily(ch,country,rng){
-  ensurePhase10(ch);const logs=[],expenses=[],incomes=[],housing=ensureHousing(ch);
+  ensurePhase10(ch);hydrateNames(ch,rng);const logs=[],expenses=[],incomes=[],housing=ensureHousing(ch);
   const social=(ch.selectedActivities||[]).some(x=>x==='socializing'||x==='family');
   resolveFriends(ch,country,rng,social,logs);
 
@@ -182,17 +185,17 @@ export function resolveFamily(ch,country,rng){
   if(!ch.partner&&!ch.spouse&&ch.datingIntent&&ch.age>=16&&rng.chance(.18+ch.stats.charisma/500)){
     const candidate=makePartner(ch,country,rng),law=relationshipLawProfile(country);
     if(isSameSexCouple(ch,candidate)&&law.status==='criminalized'&&rng.chance(law.safetyRisk)){logs.push('Legal and safety risks prevented a potential same-sex relationship from developing.');}
-    else{ch.partner=candidate;ch.relationshipStatus='dating';logs.push(`You began dating someone; compatibility is ${Math.round(candidate.compatibility)}/100.`);}
+    else{ch.partner=candidate;ch.relationshipStatus='dating';logs.push(`You began dating ${displayName(candidate)}; compatibility is ${Math.round(candidate.compatibility)}/100.`);}
   }
   if(ch.partner?.alive){
     ch.partner.yearsTogether+=1;ch.partner.relationshipScore=clamp(ch.partner.relationshipScore+(social?3:-2)+(ch.partner.compatibility-50)/50);
     if(ch.proposalIntent){
       const accepted=rng.chance(.25+ch.partner.relationshipScore/170+ch.partner.compatibility/300);
-      if(accepted){ch.partner.engaged=true;ch.relationshipStatus='engaged';logs.push('You became engaged.');}else logs.push('Your proposal was declined.');
+      if(accepted){ch.partner.engaged=true;ch.relationshipStatus='engaged';logs.push(`You and ${displayName(ch.partner)} became engaged.`);}else logs.push(`${displayName(ch.partner)} declined your proposal.`);
       ch.proposalIntent=false;
     }
     if(ch.marriageIntent&&ch.partner.engaged){
-      if(canMarry(ch,ch.partner,country)){ch.spouse={...ch.partner,id:`spouse-${ch.age}`,relation:'Spouse',engaged:false};spouseWork(ch,country,rng,ch.spouse);ch.partner=null;ch.relationshipStatus='married';ch.relationshipHistory.push({status:'married',age:ch.age});logs.push('You married your partner.');}
+      if(canMarry(ch,ch.partner,country)){const partner=ch.partner;applyMarriageName(ch,partner,country,ch.identity?.pendingMarriageChoice);ch.spouse={...partner,id:`spouse-${ch.age}`,relation:'Spouse',engaged:false};spouseWork(ch,country,rng,ch.spouse);ch.partner=null;ch.relationshipStatus='married';ch.relationshipHistory.push({status:'married',age:ch.age,spouseName:displayName(ch.spouse)});logs.push(`You married ${displayName(ch.spouse)}.`);}
       else{ch.relationshipStatus='committed';ch.partner.engaged=false;logs.push('Marriage was unavailable under local law; you remained committed partners.');}
       ch.marriageIntent=false;
     }

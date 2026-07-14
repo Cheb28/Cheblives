@@ -78,7 +78,7 @@ XP/levels, and education credentials are implemented and tested.
 
 ## Phase 10.1 — Names and Legal Identity
 
-**Status: planned.** Let the player enter or generate a name. Generate culturally contextual given
+**Status: complete.** The player can enter or generate a name. Culturally contextual given
 and family names for parents, siblings, partners, friends, children, and grandchildren. Naming
 profiles may use paternal, maternal, bilateral, double-surname, patronymic/matronymic, or
 family-name-first conventions according to country, culture, religion, and family background.
@@ -90,7 +90,7 @@ offers keeping, adopting, appending, or combining surnames only where culturally
 appropriate, including traditions in which spouses normally retain their birth names. Voluntary
 legal name changes depend on country eligibility, procedure, restrictions, and cost.
 
-**Verify:** generated households have internally consistent but non-identical names across several
+**Verified:** generated households have internally consistent but non-identical names across several
 single- and multinational country profiles. Manual player and child names persist through saves,
 marriage, migration, divorce, death, and heir continuation.
 

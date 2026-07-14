@@ -8,6 +8,7 @@ export default function CharacterCreation({ onStart, saveTools }) {
   const [countryId, setCountryId] = useState('');
   const [locationName, setLocationName] = useState('');
   const [sex, setSex] = useState('');
+  const [playerName, setPlayerName] = useState('');
   const [ethnicity, setEthnicity] = useState('');
   const [religion, setReligion] = useState('');
   const [wealthClass, setWealthClass] = useState('');
@@ -24,6 +25,7 @@ export default function CharacterCreation({ onStart, saveTools }) {
     const opts = { mode: 'custom', countryId };
     if (locationName) opts.locationName = locationName;
     if (sex) opts.sex = sex;
+    if (playerName.trim()) opts.playerName = playerName.trim();
     if (ethnicity) opts.ethnicity = ethnicity;
     if (religion) opts.religion = religion;
     if (wealthClass) opts.wealthClass = wealthClass;
@@ -74,6 +76,11 @@ export default function CharacterCreation({ onStart, saveTools }) {
               <option value="">Random location</option>
               {locations.map(l => <option key={l.name} value={l.name}>{l.name}</option>)}
             </select>
+          </div>
+
+          <div className="field">
+            <label htmlFor="player-name">Your name</label>
+            <input id="player-name" maxLength="60" value={playerName} onChange={e => setPlayerName(e.target.value)} placeholder="Leave blank to generate a culturally contextual name" />
           </div>
 
           <div className="field">

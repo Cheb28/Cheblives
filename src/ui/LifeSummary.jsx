@@ -1,6 +1,7 @@
 import { COUNTRY_BY_ID } from '../engine/countries.js';
 import { money, titleCase } from './format.js';
 import { personAge } from '../engine/family.js';
+import { displayName } from '../engine/names.js';
 
 // Shown at death (GAME_DESIGN section 1). Heir continuation arrives in Phase 4.
 export default function LifeSummary({ state, onRestart, onContinueHeir }) {
@@ -13,12 +14,14 @@ export default function LifeSummary({ state, onRestart, onContinueHeir }) {
       <div className="card">
         <h1>A life concluded</h1>
         <div className="sub">
-          You lived to age {ch.age} in {ch.countryName}, dying of {ch.causeOfDeath}.
+          {displayName(ch)} lived to age {ch.age} in {ch.countryName}, dying of {ch.causeOfDeath}.
         </div>
 
         <div className="grid" style={{ marginBottom: 18 }}>
           <div className="panel">
             <div className="kv"><span className="k">Born in</span><span className="v">{ch.location.name}, {ch.countryName}</span></div>
+            <div className="kv"><span className="k">Birth name</span><span className="v">{ch.identity?.birthName}</span></div>
+            <div className="kv"><span className="k">Final legal name</span><span className="v">{ch.identity?.currentLegalName}</span></div>
             <div className="kv"><span className="k">Lived</span><span className="v">{ch.age} years</span></div>
             <div className="kv"><span className="k">Country life expectancy</span><span className="v">{country.lifeExpectancy} yrs</span></div>
             <div className="kv"><span className="k">Wealth class</span><span className="v">{ch.wealthClass}</span></div>
@@ -55,7 +58,7 @@ export default function LifeSummary({ state, onRestart, onContinueHeir }) {
 
         <div className="panel" style={{ marginBottom: 18 }}>
           <h3>Family Tree</h3>
-          {ch.spouse && <div className="kv"><span className="k">Spouse</span><span className="v">{ch.spouse.alive ? `Age ${personAge(ch, ch.spouse)}` : 'Deceased'}</span></div>}
+          {ch.spouse && <div className="kv"><span className="k">Spouse · {displayName(ch.spouse)}</span><span className="v">{ch.spouse.alive ? `Age ${personAge(ch, ch.spouse)}` : 'Deceased'}</span></div>}
           {(ch.family || []).map(p => <div className="kv" key={p.id}>
             <span className="k">{p.name || (p.relation === 'Child' ? `Child ${p.childNumber}` : p.relation)}</span>
             <span className="v">{p.alive ? `Age ${personAge(ch, p)}` : 'Deceased'}</span>

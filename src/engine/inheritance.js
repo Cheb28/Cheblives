@@ -16,7 +16,7 @@ export function inheritanceRules(country) {
 
 export function eligibleBeneficiaries(ch) {
   const out = [];
-  if (ch.spouse?.alive) out.push({ id: 'spouse', label: 'Spouse', kind: 'spouse' });
+  if (ch.spouse?.alive) out.push({ id: 'spouse', label: ch.spouse.name || 'Spouse', kind: 'spouse' });
   for (const child of (ch.family || []).filter(p => p.relation === 'Child' && p.alive)) {
     out.push({ id: child.id, label: child.name || `Child ${child.childNumber}`, kind: 'child' });
   }

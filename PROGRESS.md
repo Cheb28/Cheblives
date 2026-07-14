@@ -2,7 +2,21 @@
 
 Handoff notes for whoever continues this build (see `START_HERE.txt` first, then `docs/`).
 
-## Current status: Phase 10 COMPLETE — Family and Social Life expansion
+## Current status: Phase 10.1 COMPLETE — Names and Legal Identity
+
+### Phase 10.1 — Names and Legal Identity
+
+- Added optional player-entered names and isolated culturally contextual generation across major
+  national and regional naming traditions, including family-name-first and double-surname profiles.
+- Parents, siblings, partners, spouses, friends, children, and grandchildren now receive persistent
+  names. Multinational parents use their own country profile, while household surnames stay coherent.
+- Added birth, current legal, preferred display, nickname, and previous-name records. Adult legal-name
+  changes use simplified country availability, procedure, and fee profiles.
+- Engagement offers only culturally appropriate keep/adopt/append/combine surname choices. Countries
+  and traditions where spouses normally retain birth names expose only the keep-name choice.
+- Children can be named by the player. Manual names and identity histories survive export/import,
+  migration, relationships, death, estate distribution, and continuation as an heir.
+- Added Phase 10.1 regression coverage without altering the main simulation RNG sequence.
 
 ### Post-Phase-10 identity and routine polish
 

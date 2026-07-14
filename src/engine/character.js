@@ -7,6 +7,7 @@ import { initImmigration } from './immigration.js';
 import { initJudicial } from './judicial.js';
 import { canonicalLanguage, primaryLanguages } from './language.js';
 import { initialHousing } from './housing.js';
+import { assignBirthHouseholdNames } from './names.js';
 
 export const WEALTH_CLASSES = ['Destitute', 'Poor', 'Middle', 'Affluent', 'Rich'];
 const PERSONALITY_TRAITS = ['ambitious','caring','independent','social','cautious','creative','resilient','curious'];
@@ -54,7 +55,7 @@ function makePerson(rng, country, { relation, sex, ageOffset = 0, wealthClass })
     id: `${relation.toLowerCase()}-${Math.abs(ageOffset)}-${rng.int(1, 999999)}`,
     relation,
     sex: chosenSex,
-    name: null, // names deferred to a later phase; UI shows relation
+    name: null,
     ethnicity: rollDistribution(rng, country.ethnicGroups, 'Local'),
     religion: rollDistribution(rng, country.religions, 'None'),
     relationshipScore: 70,
@@ -193,6 +194,8 @@ export function createCharacter(rng, options = {}) {
     const foreign=rng.pick(rng.chance(.75)&&nearby.length?nearby:candidates);
     setForeignParent(foreign, rng.chance(.5) ? 'Father' : 'Mother', rng.chance(.5));
   }
+
+  assignBirthHouseholdNames(character, rng, country, options.playerName);
 
   return character;
 }

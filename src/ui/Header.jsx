@@ -1,5 +1,6 @@
 import { money, STAT_COLORS } from './format.js';
 import { netWorth } from '../engine/advance.js';
+import { displayName } from '../engine/names.js';
 
 function MiniBar({ value, color, label }) {
   return (
@@ -14,7 +15,7 @@ export default function Header({ character }) {
   return (
     <div className="header">
       <div className="who">
-        <span className="name">{character.sex === 'male' ? '♂' : '♀'} You, age {character.age}</span>
+        <span className="name">{character.sex === 'male' ? '♂' : '♀'} {displayName(character)}, age {character.age}</span>
         <span className="loc">{character.location.name}, {character.countryName}</span>
       </div>
 

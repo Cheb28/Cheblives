@@ -6,10 +6,12 @@ import {
   setDatingIntent,setDatingPreference,setFriendIntent,proposeMarriage,planMarriage,endPartnership,requestDivorce,
   setChildrenIntent,setContraception,requestFertilityTreatment,requestAdoption,requestFostering,
   setCaregiving,requestReconciliation,seekDomesticHelp,leaveUnsafeHome,requestWorkPermission,setHouseholdContribution,
+  setMarriageNameChoice,nameChild,
 } from '../../engine/actions.js';
 import { ensureHousing } from '../../engine/housing.js';
 import { skillLabel } from '../../engine/skills.js';
 import { money, titleCase } from '../format.js';
+import { displayName, marriageNameChoices } from '../../engine/names.js';
 
 const action = (fn, refresh) => () => { fn(); refresh(); };
 
@@ -34,16 +36,16 @@ export default function Family({ state, refresh }) {
       </>}
       {ch.age<16&&<div className="muted">Dating choices become available at age 16.</div>}
       {ch.partner&&<div className="subcard">
-        <div className="kv"><span>Partner</span><span>{titleCase(ch.partner.sex)} · age {personAge(ch,ch.partner)}</span></div>
+        <div className="kv"><span>Partner</span><span>{displayName(ch.partner)} · {titleCase(ch.partner.sex)} · age {personAge(ch,ch.partner)}</span></div>
         <div className="kv"><span>Compatibility</span><span>{Math.round(ch.partner.compatibility??compatibilityScore(ch,ch.partner))}/100</span></div>
         <div className="kv"><span>Relationship</span><span>{Math.round(ch.partner.relationshipScore)}/100 · {ch.partner.yearsTogether} years</span></div>
         <div className="kv"><span>Personality</span><span>{(ch.partner.personality||[]).map(titleCase).join(', ')||'Unknown'}</span></div>
         {!ch.partner.engaged&&<button disabled={ch.partner.yearsTogether<1||ch.proposalIntent} onClick={action(()=>proposeMarriage(state),refresh)}>{ch.proposalIntent?'Proposal pending':'Propose engagement'}</button>}
-        {ch.partner.engaged&&<button disabled={ch.marriageIntent} onClick={action(()=>planMarriage(state),refresh)}>{ch.marriageIntent?'Marriage decision pending':law.marriageAllowed||ch.partner.sex!==ch.sex?'Plan marriage':'Commit as partners'}</button>}
+        {ch.partner.engaged&&<><label className="kv"><span>Name after marriage</span><select aria-label="Name after marriage" value={ch.identity?.pendingMarriageChoice||'keep'} onChange={e=>{setMarriageNameChoice(state,e.target.value);refresh();}}>{marriageNameChoices(ch,ch.partner,country).map(x=><option key={x.id} value={x.id}>{x.label}</option>)}</select></label><button disabled={ch.marriageIntent} onClick={action(()=>planMarriage(state),refresh)}>{ch.marriageIntent?'Marriage decision pending':law.marriageAllowed||ch.partner.sex!==ch.sex?'Plan marriage':'Commit as partners'}</button></>}
         <button className="secondary" disabled={ch.separationIntent} onClick={action(()=>endPartnership(state),refresh)}>End relationship</button>
       </div>}
       {ch.spouse&&<div className="subcard">
-        <div className="kv"><span>Spouse</span><span>{titleCase(ch.spouse.sex)} · age {personAge(ch,ch.spouse)}</span></div>
+        <div className="kv"><span>Spouse</span><span>{displayName(ch.spouse)} · {titleCase(ch.spouse.sex)} · age {personAge(ch,ch.spouse)}</span></div>
         <div className="kv"><span>Compatibility</span><span>{Math.round(ch.spouse.compatibility||50)}/100</span></div>
         <div className="kv"><span>Relationship</span><span>{Math.round(ch.spouse.relationshipScore)}/100</span></div>
         <div className="kv"><span>Employment</span><span>{ch.spouse.working?'Working':'Not employed'}</span></div>
@@ -57,7 +59,7 @@ export default function Family({ state, refresh }) {
       <h3>Friendships</h3>
       {ch.age>=6&&<label className="check-row"><input type="checkbox" checked={ch.social.friendIntent} onChange={e=>{setFriendIntent(state,e.target.checked);refresh();}}/><span>Make time to meet a new friend this year</span></label>}
       {friends.length===0&&<div className="muted">No active close friendships.</div>}
-      {friends.map(f=><div className="kv" key={f.id}><span>Friend · {f.yearsKnown||0} years</span><span>{Math.round(f.relationshipScore)}/100 · {(f.personality||[]).map(titleCase).join(', ')}</span></div>)}
+      {friends.map(f=><div className="kv" key={f.id}><span>{displayName(f)} · {f.yearsKnown||0} years</span><span>{Math.round(f.relationshipScore)}/100 · {(f.personality||[]).map(titleCase).join(', ')}</span></div>)}
     </div>
 
     <div className="panel">
@@ -77,15 +79,17 @@ export default function Family({ state, refresh }) {
       <h3>Children</h3>
       {children.length===0&&<div className="muted">No children.</div>}
       {children.map(p=><div className="subcard" key={p.id}>
-        <div className="kv"><strong>{p.name||`Child ${p.childNumber}`} · {titleCase(p.sex)}</strong><span>{p.alive?`Age ${personAge(ch,p)} · relationship ${Math.round(p.relationshipScore)}`:'Deceased'}</span></div>
+        <div className="kv"><strong>{displayName(p)} · {titleCase(p.sex)}</strong><span>{p.alive?`Age ${personAge(ch,p)} · relationship ${Math.round(p.relationshipScore)}`:'Deceased'}</span></div>
+        {p.alive&&<div className="field"><label htmlFor={`child-name-${p.id}`}>Name this child</label><input id={`child-name-${p.id}`} maxLength="60" defaultValue={p.name||''} onBlur={e=>{nameChild(state,p.id,e.target.value);refresh();}}/></div>}
         {p.alive&&<><div className="muted">{titleCase(p.origin||'birth')} · {(p.personality||[]).map(titleCase).join(', ')||'personality developing'} · {p.educationOutcome||'not school age'}</div><div className="muted">Academic {skillLabel(p.skills?.academic)} · {p.career||'no career yet'} · {p.partnerStatus||'single'} · {p.ownChildren||0} children</div><div className="muted">{p.atHome===false?'Moved out':'At home'}{p.working?' · working':''} · {money(p.personalSavings||0)} saved{p.favoritism&&p.favoritism!=='neutral'?` · ${p.favoritism}`:''}{p.estranged?' · estranged':''}</div>{p.estranged&&<button disabled={ch.familyPlans.reconciliationId===p.id} onClick={action(()=>requestReconciliation(state,p.id),refresh)}>Attempt reconciliation</button>}</>}
+        {(p.grandchildren||[]).map(g=><div className="muted" key={g.id}>↳ {displayName(g)} · grandchild</div>)}
       </div>)}
       {children.length>0&&<div className="subcard"><strong>Working-child contributions</strong><label className="kv"><span>Under 18</span><select value={housing.teenContributionRate} onChange={e=>{setHouseholdContribution(state,'teen',e.target.value);refresh();}}>{[0,.1,.25,.5].map(v=><option key={v} value={v}>{v*100}%</option>)}</select></label><label className="kv"><span>Adult child at home</span><select value={housing.adultChildContributionRate} onChange={e=>{setHouseholdContribution(state,'adult',e.target.value);refresh();}}>{[0,.1,.25,.5].map(v=><option key={v} value={v}>{v*100}% board</option>)}</select></label></div>}
     </div>
 
     <div className="panel">
       <h3>Parents, Care & Reconciliation</h3>
-      {relatives.map(p=><div className="subcard" key={p.id}><div className="kv"><span>{p.relation}</span><span>{p.alive?`Age ${personAge(ch,p)} · ${COUNTRY_BY_ID[p.countryId]?.name||ch.countryName} national · ${Math.round(p.relationshipScore)}/100`:'Deceased'}</span></div>{p.needsCare&&<label className="check-row"><input type="checkbox" checked={ch.familyPlans.caregivingId===p.id} onChange={e=>{setCaregiving(state,e.target.checked?p.id:null);refresh();}}/><span>Provide regular care</span></label>}{p.estranged&&<button disabled={ch.familyPlans.reconciliationId===p.id} onClick={action(()=>requestReconciliation(state,p.id),refresh)}>Attempt reconciliation</button>}</div>)}
+      {relatives.map(p=><div className="subcard" key={p.id}><div className="kv"><span>{p.relation} · {displayName(p)}</span><span>{p.alive?`Age ${personAge(ch,p)} · ${COUNTRY_BY_ID[p.countryId]?.name||ch.countryName} national · ${Math.round(p.relationshipScore)}/100`:'Deceased'}</span></div>{p.needsCare&&<label className="check-row"><input type="checkbox" checked={ch.familyPlans.caregivingId===p.id} onChange={e=>{setCaregiving(state,e.target.checked?p.id:null);refresh();}}/><span>Provide regular care</span></label>}{p.estranged&&<button disabled={ch.familyPlans.reconciliationId===p.id} onClick={action(()=>requestReconciliation(state,p.id),refresh)}>Attempt reconciliation</button>}</div>)}
     </div>
 
     <div className="panel">
