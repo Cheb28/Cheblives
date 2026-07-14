@@ -2,6 +2,50 @@
 
 Ideas intentionally held outside the active phase. Items may be promoted during a later polish pass.
 
+## Reserved future Phase 11 — Employment, Annual Work Conditions, and Career Progression
+
+Phase 11 is intentionally deferred until the additional pre-Phase-11 systems are chosen. All
+mechanics must resolve in one-year turns. Do not add seasonal jobs, monthly schedules, individual
+shifts, exact leave days, or commuting; transportation and commuting belong to a separate future
+phase.
+
+1. **Employment contracts:** permanent, one-year, part-time, gig/informal, military, government,
+   and apprenticeship arrangements. Availability and prevalence depend on national work culture,
+   labor law, sector, and qualifications.
+2. **Working hours and free time:** reduced, standard, long, and extreme annual-hours settings.
+   Country law and work culture affect availability, income, activity slots, health, stress, and
+   family time.
+3. **Applications and interviews:** requirements and selection methods vary by job and country.
+   Negotiation is limited to jobs where it is realistic and is unavailable for fixed-pay systems
+   such as military service and many public-sector roles.
+4. **Career history:** record employers, sectors, contracts, titles, wages, promotions, dismissals,
+   layoffs, employment gaps, and reasons for leaving.
+5. **Job satisfaction and burnout:** pay, hours, security, workload, management, coworkers,
+   personality, health, and work-family pressure contribute. Commute is excluded.
+6. **Workplace relationships:** coworkers, supervisors, mentors, professional networks, conflict,
+   friendship, favoritism, and references.
+7. **Country-specific employment law:** minimum wages, annual leave, sick leave, parental leave,
+   working-time rules, dismissal protections, notice, severance, safety enforcement, and remedies.
+8. **Discrimination and restrictions:** sex, disability, ethnicity, religion, nationality,
+   language, immigration status, criminal record, age, and family status affect opportunity within
+   the applicable country-law profile.
+9. **Workplace injury and occupational illness:** annual risk varies by sector, job level, hours,
+   regulation, enforcement, and safety investment.
+10. **Sick leave and disability accommodations:** paid or unpaid annual leave outcomes, reduced
+    duties, flexible or remote work, rehabilitation, and career change depend on law and employer.
+11. **Unions and industrial action:** union legality, sector coverage, right-to-work rules,
+    mandatory dues or membership arrangements, collective bargaining, wage effects, strikes,
+    lockouts, and retaliation depend on country and sector.
+12. **Layoffs and economic cycles:** recessions, closures, automation, industry decline,
+    restructuring, hiring booms, and government responses affect yearly job security.
+13. **Promotions and management:** experience, skill XP and levels, credentials, performance,
+    networking, workplace relationships, discrimination, and available vacancies affect progress.
+14. **Retirement and pensions:** statutory and customary retirement ages, contribution history,
+    employer pensions, early retirement, mandatory retirement, and returning to work.
+15. **Career-specific qualifications:** degree subjects, professional licenses, trade certificates,
+    apprenticeships, examinations, continuing education, and country recognition of foreign
+    credentials.
+
 ## Family and childhood
 
 - Pregnancy, maternal-health events, childbirth costs, and recovery.
