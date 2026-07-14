@@ -6,6 +6,7 @@ import { laborProfile } from './labor.js';
 import { makeRng } from './rng.js';
 import { displayName } from './names.js';
 import { ensureExperience } from './experience.js';
+import { budgetRates, ensureFinancialState } from './financialSystems.js';
 
 const OCCUPATIONS = {
   professional:['Office professional','Teacher','Technical specialist','Healthcare worker'],
@@ -100,7 +101,7 @@ function updateEmployment(person,ch,country,r){
 function contributionFor(person,ch,income){
   if(income<=0||!isHouseholdMember(ch,person))return 0;
   const age=ageOf(ch,person),housing=ensureHousing(ch);
-  if(person.relation==='Spouse')return income;
+  if(person.relation==='Spouse')return income*budgetRates(ch).spouseRate;
   if(['Father','Mother'].includes(person.relation)&&ch.age<18)return income;
   if(person.relation==='Sibling'&&ch.age<18)return age<18?income*.6:income*.35;
   if(person.relation==='Child')return income*(age<18?housing.teenContributionRate:housing.adultChildContributionRate);
@@ -134,11 +135,13 @@ function resolveMemberHealth(person,ch,country,r,available,household){
 }
 
 export function resolveHouseholdEconomy(ch,country,rng){
+  ensureFinancialState(ch,country);
   const incomes=[],expenses=[],logs=[],people=[...(ch.family||[])];if(ch.spouse?.alive)people.push(ch.spouse);
   ch.familyOriginFinance||={settled:false,retainedFund:0,launchGift:0};
   if(ch.age>=18&&!ch.familyOriginFinance.settled){
     const originFund=ch.money.household||0,gift=Math.min(originFund*.05,medianWage(country)*.25);
     ch.money.household=0;ch.money.bank=(ch.money.bank||0)+gift;ch.familyOriginFinance={settled:true,retainedFund:Math.max(0,originFund-gift),launchGift:gift};
+    ensureFinancialState(ch,country).tax.giftsReceived+=gift;
     if(originFund>0)logs.push(`Your parents retained the family-of-origin fund; you received ${Math.round(gift).toLocaleString()} as a start in adult life.`);
   }
   let projectedIncome=0,medicalSpend=0,unmetCare=0;

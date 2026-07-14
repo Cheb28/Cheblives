@@ -1,9 +1,13 @@
+import { medianWage } from './countries.js';
 export function inheritanceRules(country) {
   const taxRate = country.taxTier === 'heavy' ? 0.20 : country.taxTier === 'moderate' ? 0.10 : 0;
   const legal = (country.legalSystem || '').toLowerCase();
   const protectedFamilyShare = /civil law|islamic|sharia|personal law/.test(legal) ? 0.5 : 0;
   return {
     taxRate,
+    exemption: medianWage(country) * (country.taxTier === 'heavy' ? .5 : country.taxTier === 'moderate' ? .75 : 1),
+    giftTaxRate: taxRate*.65,
+    spouseExempt: country.lawTier==='strong',
     protectedFamilyShare,
     label: protectedFamilyShare > 0
       ? 'Protected-family-share succession'
@@ -29,8 +33,6 @@ export function settleEstate(ch, country) {
   const gross = Math.max(0, (ch.money.cash || 0) + (ch.money.bank || 0) + (ch.money.household || 0)
     - (ch.debts.studentLoan || 0) - (ch.debts.mortgage || 0) - (ch.debts.business || 0)
     + investmentValue(ch) + (ch.business?.capital || 0) - (ch.business?.loan || 0) + (ch.homeValue || 0));
-  const tax = gross * rules.taxRate;
-  const distributable = gross - tax;
   const requested = ch.will?.shares || {};
   const hasWill = ch.will?.written && beneficiaries.some(b => (requested[b.id] || 0) > 0);
   let weights = {};
@@ -46,11 +48,15 @@ export function settleEstate(ch, country) {
   }
   const protectedPart = hasWill ? rules.protectedFamilyShare : 1;
   const equalProtected = beneficiaries.length ? protectedPart / beneficiaries.length : 0;
-  const shares = beneficiaries.map(b => {
+  const sharePlan = beneficiaries.map(b => {
     const requestedPart = total > 0 ? weights[b.id] / total : 0;
     const pct = equalProtected + (1 - protectedPart) * requestedPart;
-    return { ...b, pct, amount: distributable * pct };
+    return { ...b, pct };
   });
+  const spouseShare=rules.spouseExempt?(sharePlan.find(x=>x.kind==='spouse')?.pct||0):0;
+  const tax = Math.max(0,gross-rules.exemption) * (1-spouseShare) * rules.taxRate;
+  const distributable = gross - tax;
+  const shares=sharePlan.map(x=>({...x,amount:distributable*x.pct}));
   const familyById = new Map((ch.family || []).map(p => [p.id, p]));
   const unequal = shares.length > 1 && Math.max(...shares.map(s => s.pct), 0) - Math.min(...shares.map(s => s.pct), 1) > .45;
   const strained = shares.some(s => s.kind === 'child' && (familyById.get(s.id)?.estranged || familyById.get(s.id)?.relationshipScore < 25));

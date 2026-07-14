@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { COUNTRY_BY_ID } from '../../engine/countries.js';
 import { eligibleBeneficiaries, inheritanceRules, settleEstate } from '../../engine/inheritance.js';
 import { CRIMES, ensureJudicial, lawProfile } from '../../engine/judicial.js';
-import { changeLegalName, clearWill, setPlannedCrime, setWillShare } from '../../engine/actions.js';
+import { changeLegalName, clearWill, filePersonalBankruptcy, setPlannedCrime, setWillShare } from '../../engine/actions.js';
 import { nameChangeProfile } from '../../engine/names.js';
 import { money, titleCase } from '../format.js';
 
@@ -20,6 +20,8 @@ export default function Law({ state, refresh }) {
   const [legalName,setLegalName]=useState(ch.identity?.currentLegalName||ch.name||'');
   const [identityMessage,setIdentityMessage]=useState('');
   const changeProfile=nameChangeProfile(country,ch);
+  const bankruptcyDebt=(ch.debts?.business||0)+(ch.debts?.personalLoan||0)+(ch.debts?.creditCard||0)+(ch.debts?.tax||0);
+  const canFileBankruptcy=ch.age>=18&&bankruptcyDebt>=country.gdpPerCapita*.25&&!judicial.activeCase;
 
   return (
     <div className="grid cols-2">
@@ -42,6 +44,9 @@ export default function Law({ state, refresh }) {
         </>}
         <div className="kv"><span className="k">Active records</span><span className="v">{activeRecords.length}</span></div>
         <div className="kv"><span className="k">Outstanding court debt</span><span className="v">{money(judicial.finesOwed || 0)}</span></div>
+        <div className="kv"><span className="k">Bankruptcy-eligible debt</span><span className="v">{money(bankruptcyDebt)}</span></div>
+        <button disabled={!canFileBankruptcy||judicial.bankruptcyDue>0} onClick={()=>{filePersonalBankruptcy(state);refresh();}}>{judicial.bankruptcyDue>0?'Bankruptcy filing queued':'File for personal bankruptcy'}</button>
+        <div className="muted" style={{fontSize:11}}>A filing becomes a civil-law decision next year. The court may discharge consumer, business, and tax debt according to the local legal system; fees and consequences still apply.</div>
         {(judicial.barredUntilAge || 0) > ch.age && <div className="muted" style={{ marginTop: 10, fontSize: 12 }}>
           Most legal immigration and naturalization routes are restricted until age {judicial.barredUntilAge}.
         </div>}
@@ -79,6 +84,9 @@ export default function Law({ state, refresh }) {
         <h3>Inheritance Law</h3>
         <div className="kv"><span className="k">Succession system</span><span className="v">{rules.label}</span></div>
         <div className="kv"><span className="k">Inheritance tax</span><span className="v">{Math.round(rules.taxRate * 100)}%</span></div>
+        <div className="kv"><span className="k">Estate exemption</span><span className="v">{money(rules.exemption)}</span></div>
+        <div className="kv"><span className="k">Gift-tax rate</span><span className="v">{Math.round(rules.giftTaxRate*100)}%</span></div>
+        <div className="kv"><span className="k">Surviving spouse exemption</span><span className="v">{rules.spouseExempt?'Modeled':'Not automatic'}</span></div>
         <div className="kv"><span className="k">Protected family share</span><span className="v">{Math.round(rules.protectedFamilyShare * 100)}%</span></div>
         <div className="muted" style={{ fontSize: 12, lineHeight: 1.5, marginTop: 10 }}>{rules.note}</div>
       </div>

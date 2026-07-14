@@ -2,7 +2,26 @@
 
 Handoff notes for whoever continues this build (see `START_HERE.txt` first, then `docs/`).
 
-## Current status: Phase 10.2 COMPLETE — Interactive Map and Country Information
+## Current status: Phase 10.3 COMPLETE — Currency, Banking, Household Budgets, and Taxation
+
+### Phase 10.3 — Currency, Banking, Household Budgets, and Taxation
+
+- Added local currency codes, symbols, annual modeled exchange rates, local-balance displays,
+  migration/remittance exchange fees, and country-sensitive nominal and real savings rates.
+- Added personal loans, credit cards, country-rate mortgages, consumer-debt repayment, bankruptcy
+  through Law, remittances, and emergency, housing, and retirement savings goals.
+- Kept personal and household money separate. Working spouses retain personal savings and contribute
+  according to proportional, equal, pooled, separate, single-income, or custom arrangements. Changes
+  are negotiated annually and may be accepted or declined.
+- Expanded annual taxes with progressive, flat, and no-income-tax systems; marginal/effective rates;
+  payroll/social contributions; optional joint filing where modeled; investment, consumption, gift,
+  inheritance/estate, and retirement taxes; withholding refunds/balances; residency; audits,
+  penalties, tax debt, and deliberate underreporting risk.
+- Added estate exemptions and spouse exemptions, detailed Finance and Law panels, save migration,
+  and Phase 10.3 regression coverage across all 208 countries. The complete test suite and production
+  build pass.
+
+## Previous status: Phase 10.2 COMPLETE — Interactive Map and Country Information
 
 ### Phase 10.2 — Interactive Map and Country Information
 

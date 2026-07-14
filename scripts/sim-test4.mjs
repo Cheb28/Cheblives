@@ -44,8 +44,8 @@ assert.equal(genderRightsProfile(afghanistan).tier, 'severe');
   });
   ch.will = { written: true, shares: { spouse: 0, 'child-test': 100 } };
   const estate = settleEstate(ch, germany);
-  assert.equal(estate.tax, 20_000);
-  assert.equal(estate.distributable, 80_000);
+  assert.equal(estate.tax, Math.max(0,100_000-estate.rules.exemption)*.75*estate.rules.taxRate);
+  assert.equal(estate.distributable, 100_000-estate.tax);
   assert.equal(estate.shares.find(x => x.id === 'spouse').pct, 0.25);
   assert.equal(estate.shares.find(x => x.id === 'child-test').pct, 0.75);
 }

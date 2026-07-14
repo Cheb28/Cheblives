@@ -25,6 +25,8 @@ import { ensureJudicial, openCivilCase, openCriminalCase, resolveJudicialYear } 
 import { ensureBenefits, evaluateBenefits, unemploymentEntitlement } from './welfare.js';
 import { ensureHousing, resolveHousingYear } from './housing.js';
 import { resolveLanguageDevelopment } from './language.js';
+import { bankProfile, budgetRates, ensureFinancialState, resolveFinancialYear, taxProfile } from './financialSystems.js';
+import { inheritanceRules } from './inheritance.js';
 
 function clamp(v, lo = 1, hi = 100) { return Math.max(lo, Math.min(hi, v)); }
 
@@ -142,6 +144,7 @@ function resolvePendingDecisions(ch, country, state, rng, log) {
 
 // ---- Finances (sections 8.1, 8.3, 8.4) ----------------------------------
 function resolveFinances(ch, country, rng, incomeLines, log, extraExpenses = []) {
+  const financial=ensureFinancialState(ch,country),taxModel=taxProfile(country);
   const independent = isIndependent(ch);
   const statement = {
     age: ch.age, income: [], expenses: [], assetChanges: [], net: 0,
@@ -167,15 +170,32 @@ function resolveFinances(ch, country, rng, incomeLines, log, extraExpenses = [])
 
   // Bank interest (real erosion) on existing savings — flows through net, not applied separately.
   if (ch.money.bank > 0) {
-    const interest = ch.money.bank * bankRealRate();
+    const interest = ch.money.bank * bankRealRate(country);
     if (Math.abs(interest) >= 1) {
       statement.income.push({ label: 'Bank interest (real)', amount: interest });
       personalIncome += interest;
     }
   }
 
-  const personalTax = computeTax(country, personalTaxable);
-  const householdTax = computeTax(country, householdTaxable);
+  const jointAllowed=!!ch.spouse?.alive&&taxModel.filing==='joint optional';
+  const joint=jointAllowed&&financial.tax.filingChoice!=='individual';
+  const compliance=financial.tax.compliance||'honest',reportMult=compliance==='underreport'?.65:1;
+  let personalTax,householdTax;
+  if(joint){
+    const combined=computeTax(country,(personalTaxable+householdTaxable)*reportMult,{joint:true}),share=(personalTaxable+householdTaxable)>0?personalTaxable/(personalTaxable+householdTaxable):.5;
+    personalTax={...combined,incomeTax:combined.incomeTax*share,socialContrib:combined.socialContrib*share,total:combined.total*share};
+    householdTax={...combined,incomeTax:combined.incomeTax*(1-share),socialContrib:combined.socialContrib*(1-share),total:combined.total*(1-share)};
+  }else{
+    personalTax = computeTax(country, personalTaxable*reportMult);
+    householdTax = computeTax(country, householdTaxable*reportMult);
+  }
+  const investmentTax=Math.max(0,financial.tax.realizedInvestmentGain||0)*taxModel.capitalGainsRate;
+  const pensionTax=Math.max(0,financial.tax.pensionWithdrawals||0)*taxModel.pensionWithdrawalRate;
+  const inheritanceModel=inheritanceRules(country),taxableGifts=Math.max(0,(financial.tax.giftsReceived||0)-inheritanceModel.exemption*.1);
+  const giftTax=taxableGifts*inheritanceModel.giftTaxRate;
+  personalTax.incomeTax+=investmentTax+pensionTax+giftTax;personalTax.total+=investmentTax+pensionTax+giftTax;
+  const honestTax=computeTax(country,personalTaxable+householdTaxable,{joint}).total+investmentTax+pensionTax+giftTax;
+  const evaded=Math.max(0,honestTax-personalTax.total-householdTax.total);
   statement.tax = {
     incomeTax: personalTax.incomeTax + householdTax.incomeTax,
     socialContrib: personalTax.socialContrib + householdTax.socialContrib,
@@ -184,6 +204,9 @@ function resolveFinances(ch, country, rng, incomeLines, log, extraExpenses = [])
     householdIncomeTax: householdTax.incomeTax,
     personalSocialContrib: personalTax.socialContrib,
     householdSocialContrib: householdTax.socialContrib,
+    investmentTax,pensionTax,giftTax,consumptionTax:0,system:taxModel.system,filing:joint?'joint':'individual',
+    marginalRate:Math.max(personalTax.marginalRate||0,householdTax.marginalRate||0),effectiveRate:0,
+    withheld:0,refund:0,balanceDue:0,evaded,
   };
   statement.household.income = householdIncome;
   statement.household.taxes = householdTax.total;
@@ -200,13 +223,18 @@ function resolveFinances(ch, country, rng, incomeLines, log, extraExpenses = [])
     const serving = ch.military.status === 'serving' || ch._servedThisYear;
     const imprisoned = ch.employmentStatus === 'prison';
     const col = costOfLiving(country, ch) * (imprisoned ? 0.15 : serving ? 0.4 : 1);
+    const consumptionTax=col*taxModel.consumptionRate/(1+taxModel.consumptionRate);
+    statement.tax.consumptionTax+=consumptionTax;statement.tax.total+=consumptionTax;householdTax.total+=consumptionTax;
     const rentAmt = serving || imprisoned ? 0 : rent(country, ch, personalTaxable);
-    addExpense({ label: imprisoned ? 'Prison necessities' : serving ? 'Living costs (service)' : 'Cost of living', amount: col }, true);
+    addExpense({ label: imprisoned ? 'Prison necessities' : serving ? 'Living costs (service)' : 'Cost of living before consumption tax', amount: col-consumptionTax }, true);
     if (rentAmt > 0) addExpense({ label: 'Rent', amount: rentAmt }, true);
     if (ch.ownsHome && ch.debts.mortgage > 0) {
-      const payment = Math.min(ch.debts.mortgage, ch.debts.mortgage * 0.08);
+      const mortgageRate=bankProfile(country).loanRate*.65;
+      const interest=ch.debts.mortgage*mortgageRate;
+      ch.debts.mortgage+=interest;
+      const payment = Math.min(ch.debts.mortgage, Math.max(ch.debts.mortgage * 0.08, interest));
       ch.debts.mortgage -= payment;
-      addExpense({ label: 'Mortgage principal payment', amount: payment }, true);
+      addExpense({ label: `Mortgage payment (${(mortgageRate*100).toFixed(1)}% rate)`, amount: payment }, true);
     }
   }
 
@@ -243,8 +271,24 @@ function resolveFinances(ch, country, rng, incomeLines, log, extraExpenses = [])
     if (e.amount > 0) addExpense({ label: e.label, amount: e.amount }, !!e.household);
   }
 
+  if(evaded>0&&rng.chance(taxModel.auditChance)){
+    const penalty=evaded*(country.lawTier==='strong'?2:1.25);ch.debts.tax=(ch.debts.tax||0)+penalty;financial.tax.carryBalance=ch.debts.tax;
+    financial.tax.auditHistory.push({age:ch.age,evaded,penalty});
+    if(!ch.judicial.activeCase)openCriminalCase(ch,country,'tax_evasion',{guilty:true,source:'tax audit'});
+    log.push(`A tax audit found underreported income and assessed ${Math.round(penalty).toLocaleString()} in tax and penalties.`);
+  }
+
+  const directTax=statement.tax.total,withheld=directTax*(.94+rng.next()*.12);
+  statement.tax.withheld=withheld;statement.tax.refund=Math.max(0,withheld-directTax);statement.tax.balanceDue=Math.max(0,directTax-withheld);
+  statement.tax.effectiveRate=(personalIncome+householdIncome)>0?directTax/(personalIncome+householdIncome):0;
+  statement.tax.residency=country.name;
+  financial.tax.realizedInvestmentGain=0;financial.tax.pensionWithdrawals=0;financial.tax.giftsReceived=0;financial.tax.lastResidencyId=country.id;
+
   statement.household.expenses = householdExpenses;
-  statement.household.net = householdIncome - householdTax.total - householdExpenses;
+  const contribution=ch.spouse?.alive?Math.max(0,personalIncome-personalTax.total-personalExpenses)*budgetRates(ch).playerRate:0;
+  statement.transfers=contribution>0?[{label:'Your contribution to household budget',amount:contribution}]:[];
+  statement.household.taxes=householdTax.total;
+  statement.household.net = householdIncome+contribution - householdTax.total - householdExpenses;
   let net = personalIncome + householdIncome - statement.tax.total - personalExpenses - householdExpenses;
 
   // Hardship floor: living costs can't push money below zero (people go without,
@@ -263,7 +307,7 @@ function resolveFinances(ch, country, rng, incomeLines, log, extraExpenses = [])
 
   // Apply net across the money pool (bank first, cash buffer).
   ch.money.household = (ch.money.household || 0) + statement.household.net;
-  ch.money.bank += personalIncome - personalTax.total - personalExpenses;
+  ch.money.bank += personalIncome - personalTax.total - personalExpenses-contribution;
   if (ch.money.household < 0) { ch.money.bank += ch.money.household; ch.money.household = 0; }
   if (ch.money.bank < 0) { ch.money.cash += ch.money.bank; ch.money.bank = 0; }
   if (ch.money.cash < 0) ch.money.cash = 0; // floored by hardship above
@@ -281,7 +325,7 @@ function resolveFinances(ch, country, rng, incomeLines, log, extraExpenses = [])
 
 export function netWorth(ch) {
   return (ch.money.cash || 0) + (ch.money.bank || 0)+(ch.money.household||0) - (ch.debts.studentLoan || 0)-(ch.debts.mortgage||0)
-    - (ch.debts.business || 0) + investmentValue(ch) + (ch.business?.capital||0)
+    - (ch.debts.business || 0)-(ch.debts.personalLoan||0)-(ch.debts.creditCard||0)-(ch.debts.tax||0) + investmentValue(ch) + (ch.business?.capital||0)
     - (ch.business?.loan || 0) - (ch.judicial?.finesOwed || 0) + (ch.homeValue || 0);
 }
 
@@ -372,6 +416,8 @@ export function advanceYear(state) {
   // 4. Activities (selected for the year).
   const sideIncome = applyActivities(ch, country, rng, ch.selectedActivities);
   ch.stats.happiness = clamp(ch.stats.happiness + (LIFESTYLES[ch.lifestyle || 'normal']?.happiness || 0));
+  const annualFinance=resolveFinancialYear(ch,country,rng);
+  for(const line of annualFinance.logs)log.push(line);
   const family = resolveFamily(ch, country, rng);
   for (const line of family.logs) { log.push(line); pushEvent(ch, 'family', line); }
   // The routine persists. It is reconciled after all status changes below.
@@ -424,6 +470,7 @@ export function advanceYear(state) {
 
   // Medical expenses (insurance premium + treatment costs) go into the statement.
   const extraExpenses = [];
+  extraExpenses.push(...annualFinance.expenses);
   extraExpenses.push(...family.expenses);
   if (hctx.insuranceLine) extraExpenses.push(hctx.insuranceLine);
   if (health.medicalCosts > 0) extraExpenses.push({ label: 'Medical costs', amount: health.medicalCosts, household: ch.age < 18 || ch.employmentStatus === 'student' });

@@ -4,6 +4,7 @@ import { immigrationOptions, naturalizationStatus, ROUTE_LABELS, pppConversionFa
 import { applyForMigration, applyForCitizenship } from '../../engine/actions.js';
 import { money, titleCase } from '../format.js';
 import { languageProficiencyLabel, naturalizationLanguageRequirement, primaryLanguages, workLanguageMultiplier } from '../../engine/language.js';
+import { currencyCode, exchangeFeeRate, formatLocal } from '../../engine/financialSystems.js';
 
 export default function Travel({ state, refresh }) {
   const ch = state.character;
@@ -32,6 +33,7 @@ export default function Travel({ state, refresh }) {
       <div className="panel">
         <h3>Immigration Status</h3>
         <div className="kv"><span className="k">Current country</span><span className="v">{ch.countryName}</span></div>
+        <div className="kv"><span className="k">Current currency</span><span className="v">{current.currency} · {formatLocal(current,ch,1)} per PPP dollar</span></div>
         <div className="kv"><span className="k">Status</span><span className="v">{titleCase(im.residence.status)}</span></div>
         <div className="kv"><span className="k">Citizenship(s)</span><span className="v">{im.citizenships.map(id=>COUNTRY_BY_ID[id]?.name).filter(Boolean).join(', ')}</span></div>
         {im.residence.status !== 'citizen' && <>
@@ -71,6 +73,8 @@ export default function Travel({ state, refresh }) {
           <div className="kv"><span className="k">Typical wage</span><span className="v">{money(medianWage(target))}</span></div>
           <div className="kv"><span className="k">Naturalization</span><span className="v">{target.citizenship.naturalizationYears} years</span></div>
           <div className="kv"><span className="k">PPP conversion</span><span className="v">×{pppConversionFactor(current,target).toFixed(2)}</span></div>
+          <div className="kv"><span className="k">Destination currency</span><span className="v">{target.currency} · {currencyCode(target)}</span></div>
+          <div className="kv"><span className="k">Exchange fee on migration</span><span className="v">about {(exchangeFeeRate(target)*100).toFixed(1)}%</span></div>
           <div className="kv"><span className="k">Primary destination languages</span><span className="v">{primaryLanguages(target).map(lang=>`${lang} (${Math.round((ch.languages||{})[lang]||0)}/100)`).join(', ') || 'Not listed'}</span></div>
           {naturalizationLanguageRequirement(target).required>0&&<div className="muted" style={{fontSize:11}}>Modeled citizenship language threshold: {naturalizationLanguageRequirement(target).language} {naturalizationLanguageRequirement(target).required}/100.</div>}
         </div>

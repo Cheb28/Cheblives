@@ -9,6 +9,7 @@ import { displayName, hydrateNames } from './names.js';
 import { initializeFamilyEconomy } from './household.js';
 import { ensureExperience } from './experience.js';
 import { migrateLanguages } from './language.js';
+import { ensureFinancialState } from './financialSystems.js';
 
 // Create a fresh game. options passed through to createCharacter.
 // If options.seed omitted, a random one is generated (kept for reproducibility).
@@ -63,6 +64,7 @@ export function deserialize(data) {
   const birthCountry=COUNTRY_BY_ID[data.character.immigration?.originCountryId]||COUNTRY_BY_ID[data.character.countryId];
   migrateLanguages(data.character,birthCountry,COUNTRY_BY_ID);
   initializeFamilyEconomy(data.character, COUNTRY_BY_ID[data.character.countryId], rng);
+  ensureFinancialState(data.character,COUNTRY_BY_ID[data.character.countryId]);
   return { ...data, rng };
 }
 

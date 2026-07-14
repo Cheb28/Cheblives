@@ -16,6 +16,7 @@ const OFFENCES = {
   immigration: { label: 'Immigration offence', evidence: 0.82, fine: 0.50, prison: 1, severity: 2 },
   activism: { label: 'Prohibited political activity', evidence: 0.38, fine: 0.20, prison: 3, severity: 2 },
   business: { label: 'Business-law violation', evidence: 0.72, fine: 1.00, prison: 2, severity: 2 },
+  tax_evasion: { label: 'Tax evasion', evidence: 0.82, fine: 1.20, prison: 2, severity: 2 },
   false_accusation: { label: 'False criminal accusation', evidence: 0.24, fine: 0.35, prison: 2, severity: 1 },
 };
 
@@ -236,11 +237,12 @@ export function resolveCivilDecision(ch, country, rng, decision, log) {
   if (legalCase.civilKind === 'bankruptcy') {
     if (choice === 'file') {
       const discharge = country.lawTier === 'strong' ? 0.85 : country.lawTier === 'medium' ? 0.55 : 0.20;
-      const before = ch.debts.business || 0;
-      ch.debts.business = before * (1 - discharge);
+      const before = (ch.debts.business||0)+(ch.debts.personalLoan||0)+(ch.debts.creditCard||0)+(ch.debts.tax||0);
+      for(const key of ['business','personalLoan','creditCard','tax'])ch.debts[key]=(ch.debts[key]||0)*(1-discharge);
+      if(ch.financial){ch.financial.personalLoan.balance=ch.debts.personalLoan;ch.financial.creditCard.balance=ch.debts.creditCard;ch.financial.tax.carryBalance=ch.debts.tax;}
       j.finesOwed += payFromPersonalFunds(ch, mw * 0.20);
       legalCase.discharged = before * discharge;
-      log.push(`Bankruptcy court discharged ${Math.round(discharge * 100)}% of eligible business debt.`);
+      log.push(`Bankruptcy court discharged ${Math.round(discharge * 100)}% of eligible personal and business debt.`);
       if (country.lawTier === 'weak' && before > mw * 2 && rng.chance(0.12)) {
         imprison(ch, 1, 'debt enforcement');
         log.push('A punitive debt-enforcement order sent you to prison for one year.');

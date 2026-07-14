@@ -135,12 +135,23 @@ function parseCoordinates(value) {
 }
 
 function parseCurrency(exchangeRates, countryName) {
+  const currentLabels={Afghanistan:'Afghan afghanis (AFN)',Aruba:'Aruban florins (AWG)',Belarus:'Belarusian rubles (BYN)',China:'Chinese yuan renminbi (CNY)',Eswatini:'Swazi emalangeni (SZL)',Ghana:'Ghanaian cedis (GHS)',Kuwait:'Kuwaiti dinars (KWD)',Mauritania:'Mauritanian ouguiyas (MRU)',Mozambique:'Mozambican meticais (MZN)',Samoa:'Samoan tala (WST)','Sao Tome and Principe':'São Tomé and Príncipe dobras (STN)','Sierra Leone':'Sierra Leonean leones (SLE)',Thailand:'Thai baht (THB)',Turkmenistan:'Turkmenistan manat (TMT)',Venezuela:'Venezuelan bolívares (VES)',Zambia:'Zambian kwacha (ZMW)',Zimbabwe:'Zimbabwean dollars (ZWL)'};
+  if(currentLabels[countryName])return currentLabels[countryName];
   const raw = stripHtml(text(exchangeRates?.Currency) || '');
   if (raw) return raw.replace(/\s+per US dollar.*$/i, '').replace(/\s+-\s*$/, '').trim();
   if (/US dollar/i.test(stripHtml(text(exchangeRates) || ''))) return 'US dollars (USD)';
   if (countryName === 'Gaza, Gaza Strip') return 'new Israeli shekels (ILS)';
   if (countryName === 'United States') return 'US dollars (USD)';
   return null;
+}
+
+function parseExchangeRate(exchangeRates, countryName) {
+  if (countryName === 'United States') return 1;
+  const value = latest(exchangeRates);
+  if (value != null && value > 0) return value;
+  if (/US dollar/i.test(stripHtml(text(exchangeRates) || ''))) return 1;
+  if (countryName === 'Gaza, Gaza Strip') return 3.7;
+  return 1;
 }
 
 function flagCode(raw, countryName) {
@@ -426,6 +437,7 @@ function buildCountry(raw, region, idCode) {
     id: idCode, name, region: REGION_NAMES[region] || region,
     coordinates: parseCoordinates(text(Geo['Geographic coordinates'])),
     currency: parseCurrency(E['Exchange rates'], name),
+    exchangeRate: parseExchangeRate(E['Exchange rates'], name),
     flagCode: flagCode(raw, name),
     population,
     gdpPerCapita,

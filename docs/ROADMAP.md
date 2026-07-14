@@ -153,7 +153,30 @@ complete text facts. The map library is a separate nested lazy chunk and does no
 initial JavaScript bundle. Birth and migration keep the correct current/origin locations; responsive
 and keyboard-accessible text content remains usable if remote map tiles cannot load.
 
-## Phase 10.3 — Religion, Belief, Charity, and Religious Legacy
+## Phase 10.3 — Currency, Banking, Household Budgets, and Taxation
+
+**Status: complete.** Added local currencies, annual modeled exchange rates, exchange fees,
+country-sensitive savings interest, consumer credit, personal loans, country-rate mortgages,
+remittances, investment basis and realized-gain taxation, savings goals, and personal bankruptcy
+through the Law system.
+
+Personal savings, spouse savings, and the household fund remain separate. Couples may use
+proportional, equal, pooled, mostly separate, single-income, or custom contribution arrangements;
+changes are proposed and resolve annually according to relationship strength and broad cultural
+context. The later Religion phase may deepen those influences without removing player choice.
+
+Country tax profiles now distinguish progressive, flat, and no-personal-income-tax systems and
+itemize marginal/effective rates, income tax, payroll/social insurance, individual or optional joint
+spouse filing, investment, consumption, gift, inheritance/estate, and retirement taxes. Annual
+filing records withholding, refunds or balances due, tax residency, audits, penalties, tax debt,
+and the legal risk of deliberate underreporting.
+
+**Verified:** generated exchange rates and currency codes cover all 208 countries; account transfers
+balance; spouses retain personal funds; loans, remittances, investments, migration exchange fees,
+goals, bankruptcy, estate exemptions, and tax statements survive saves; every annual financial
+statement balances; the complete regression suite and production build pass.
+
+## Phase 10.4 — Religion, Belief, Charity, and Religious Legacy
 
 **Status: planned.** Add a Religion tab. Keep public religious identity, private belief, observance,
 sect/denomination, and community standing separate rather than treating piety as a moral judgment.
@@ -190,7 +213,7 @@ annual time and qualifications; consequences vary by country; charitable payment
 financial statement; wills/endowments survive death; and legacy events remain rare,
 tradition-specific, non-blocking, and compatible with heir continuation.
 
-## Phase 10.4 — Personal and Family Presentation
+## Phase 10.5 — Personal and Family Presentation
 
 **Status: planned.** Add a profile card showing legal/preferred name, age, location, citizenships,
 languages, occupation, credentials, optionally displayed religious identity, and family status. Add
@@ -203,13 +226,13 @@ school, workplace, and neighborhood descriptions without commuting mechanics.
 update after birth, marriage, separation, adoption, migration, moving out, death, and heir
 continuation. Important information remains understandable without color or the map.
 
-## Phase 10.5 — Personalization Integration and Polish
+## Phase 10.6 — Personalization Integration and Polish
 
 **Status: planned.** Migrate older saves, complete cultural-data and country-law review, test
 multinational and multi-generational naming/religion cases, audit accessibility, lazy-load map and
 large cultural datasets, and run full balance/build/browser verification before Phase 11 begins.
 
-**Verify:** existing saves load safely; all Phase 1–10.5 tests pass; no turn advances more than one
+**Verify:** existing saves load safely; all Phase 1–10.6 tests pass; no turn advances more than one
 year; generated cultural details remain editable where appropriate; the production build has no new
 bundle warning; and GitHub Pages works without console, attribution, or accessibility errors.
 
@@ -218,7 +241,7 @@ bundle warning; and GitHub Pages works without console, attribution, or accessib
 ## Deferred / non-goals (do not build unless asked)
 
 Additional optional depth is tracked in `EXPANSION_BACKLOG.md`. The original nine-phase playable
-roadmap and Phase 10 are complete. Phases 10.1–10.1.2 are complete; Phases 10.2–10.5 are planned personalization expansions; the
+roadmap and Phase 10 are complete. Phases 10.1–10.3 are complete; Phases 10.4–10.6 are planned personalization expansions; the
 annual employment expansion remains reserved as Phase 11.
 
 Multiplayer, real exchange rates, sub-national regions, deep social simulation, achievements/meta-progression, mobile layout (desktop-first; keep it responsive-friendly but don't invest), localization.

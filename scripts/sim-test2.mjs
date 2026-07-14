@@ -1,4 +1,5 @@
 // Phase 2 headless test: economy, careers, draft. (node scripts/sim-test2.mjs)
+import assert from 'node:assert/strict';
 import { newGame, stepYear } from '../src/engine/game.js';
 import { COUNTRY_BY_NAME } from '../src/engine/countries.js';
 import { setActivities, setJobSearch, enrollUniversity } from '../src/engine/actions.js';
@@ -96,10 +97,11 @@ console.log('\n=== Statement integrity (net = income - tax - expenses) ===');
     if (st) {
       const inc = st.income.reduce((a, l) => a + l.amount, 0);
       const exp = st.expenses.reduce((a, l) => a + l.amount, 0);
-      const expectedNet = inc - st.tax.incomeTax - st.tax.socialContrib - exp;
+      const expectedNet = inc - st.tax.total - exp;
       if (Math.abs(expectedNet - st.net) > 0.5) { bad++; if (bad < 4) console.log(`   MISMATCH age ${st.age}: ${expectedNet.toFixed(0)} vs ${st.net.toFixed(0)}`); }
       checked++;
     }
   }
   console.log(`  checked ${checked} statements, ${bad} mismatches`);
+  assert.equal(bad,0,'every annual statement must balance after all direct and consumption taxes');
 }

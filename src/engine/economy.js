@@ -2,6 +2,7 @@
 // GAME_DESIGN sections 6, 8.1, 8.3, 8.4, 8.5. All money in PPP dollars.
 import { medianWage } from './countries.js';
 import { annualHousingCost } from './housing.js';
+import { bankProfile, taxProfile } from './financialSystems.js';
 
 export { medianWage };
 
@@ -42,17 +43,23 @@ const TAX_BRACKETS = {
 };
 
 // Returns { incomeTax, socialContrib, total }. Informal income is passed as untaxed=true.
-export function computeTax(country, grossIncome, { untaxed = false } = {}) {
-  if (untaxed || grossIncome <= 0) return { incomeTax: 0, socialContrib: 0, total: 0 };
-  const mw = medianWage(country);
+export function computeTax(country, grossIncome, { untaxed = false, joint = false } = {}) {
+  const profile=taxProfile(country);
+  if (untaxed || grossIncome <= 0) return { incomeTax: 0, socialContrib: 0, total: 0, marginalRate:0, effectiveRate:0, system:profile.system };
+  const mw = medianWage(country)*(joint?1.8:1);
   const b = TAX_BRACKETS[country.taxTier] || TAX_BRACKETS.light;
-  // Progressive over the three bands.
-  const b1 = Math.min(grossIncome, mw);
-  const b2 = Math.min(Math.max(grossIncome - mw, 0), 2 * mw);
-  const b3 = Math.max(grossIncome - 3 * mw, 0);
-  const incomeTax = b1 * b.rates[0] + b2 * b.rates[1] + b3 * b.rates[2];
+  let incomeTax=0,marginalRate=0;
+  if(profile.system==='flat'){
+    marginalRate={low:.05,light:.10,moderate:.15,heavy:.20}[country.taxTier]??.10;
+    incomeTax=Math.max(0,grossIncome-mw*.25)*marginalRate;
+  }else if(profile.system==='progressive'){
+    const b1 = Math.min(grossIncome, mw),b2 = Math.min(Math.max(grossIncome - mw, 0), 2 * mw),b3 = Math.max(grossIncome - 3 * mw, 0);
+    incomeTax = b1 * b.rates[0] + b2 * b.rates[1] + b3 * b.rates[2];
+    marginalRate=grossIncome>3*mw?b.rates[2]:grossIncome>mw?b.rates[1]:b.rates[0];
+  }
   const socialContrib = grossIncome * b.social;
-  return { incomeTax, socialContrib, total: incomeTax + socialContrib };
+  const total=incomeTax+socialContrib;
+  return { incomeTax, socialContrib, total, marginalRate, effectiveRate:grossIncome?total/grossIncome:0, system:profile.system };
 }
 
 // ---- Welfare benefits (section 8.5) -------------------------------------
@@ -83,4 +90,4 @@ export function childBenefit(country, nKids) {
 // ---- Bank interest (section 8.1) ----------------------------------------
 // Slightly negative real: nominal ≈ inflation − 1%. We track money in real PPP
 // terms, so bank savings grow at −1%/yr in real terms (mild erosion).
-export function bankRealRate() { return -0.01; }
+export function bankRealRate(country) { return bankProfile(country).realRate; }

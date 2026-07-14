@@ -9,6 +9,7 @@ import { assignBirthLanguages } from './language.js';
 import { initialHousing } from './housing.js';
 import { assignBirthHouseholdNames } from './names.js';
 import { initializeFamilyEconomy } from './household.js';
+import { ensureFinancialState } from './financialSystems.js';
 import { initExperience } from './experience.js';
 
 export const WEALTH_CLASSES = ['Destitute', 'Poor', 'Middle', 'Affluent', 'Rich'];
@@ -203,6 +204,7 @@ export function createCharacter(rng, options = {}) {
   assignBirthLanguages(character,country,COUNTRY_BY_ID);
   assignBirthHouseholdNames(character, rng, country, options.playerName);
   initializeFamilyEconomy(character, country, rng);
+  ensureFinancialState(character,country);
 
   return character;
 }

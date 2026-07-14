@@ -1,6 +1,7 @@
 import { COUNTRIES, COUNTRY_BY_ID, COUNTRY_BY_NAME, locationsFor, medianWage } from './countries.js';
 import { enroll } from './education.js';
 import { destinationLanguageLevel, ensureLanguages, naturalizationLanguageRequirement, primaryLanguages } from './language.js';
+import { applyMigrationExchange } from './financialSystems.js';
 import { ensureExperience, sectorYears, vocationalYears } from './experience.js';
 
 const BLOCS = [
@@ -236,6 +237,7 @@ function liquidateAndConvert(ch, from, target) {
 export function moveCharacter(ch, target, route, age, { irregular=false, student=false, cost=0 }={}) {
   const from = COUNTRY_BY_ID[ch.countryId];
   const factor = liquidateAndConvert(ch, from, target);
+  const exchangeFee=applyMigrationExchange(ch,from,target);
   if (cost > 0) deductLiquid(ch,cost);
   if (route === 'golden' && cost > 0) ch.investments.realEstate = (ch.investments.realEstate || 0) + cost;
   const location = locationsFor(target)[0];
@@ -255,7 +257,7 @@ export function moveCharacter(ch, target, route, age, { irregular=false, student
   if (route === 'temporary_work') ch.jobSearch.sector=vocationalYears(ch)>Math.max(sectorYears(ch,'service'),sectorYears(ch,'professional'))?'industrial':'service';
   im.languagePenaltyYears=sharesLanguage(ch,target)?0:1;
   if(destinationLanguageLevel(ch,target)<60)ch.languageStudyTarget=primaryLanguages(target)[0]||null;
-  im.history.push({age,fromId:from.id,toId:target.id,route,status:im.residence.status,pppFactor:factor});
+  im.history.push({age,fromId:from.id,toId:target.id,route,status:im.residence.status,pppFactor:factor,exchangeFee});
   if(ch.spouse?.alive){ch.spouse.countryId=target.id;ch.spouse.residenceCountryId=target.id;}
   for(const child of(ch.family||[]).filter(p=>p.relation==='Child'&&p.alive)){child.countryId=target.id;child.residenceCountryId=target.id;}
   return factor;

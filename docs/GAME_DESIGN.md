@@ -170,9 +170,11 @@ Countries flagged `hasArmedForces: false` (Costa Rica, Iceland, etc.) offer no m
 
 ## 8. Financial system
 
-### 8.1 Accounts & net worth
-- **Cash** (no yield), **Bank savings** (interest ≈ country inflation − 1%, i.e., slightly negative real), **Investments** (§8.2), **Property** (home; §8.4), **Business equity** (§11), minus **Debts** (student loans, mortgage, business loans, fines).
-- Finances tab shows a yearly **statement**: income lines, expense lines, tax line, net change, and net-worth history sparkline.
+### 8.1 Accounts, currencies & net worth
+- **Cash**, **personal bank savings**, a separate **household fund**, spouse/family personal savings, **Investments** (§8.2), **Property** (home; §8.4), and **Business equity** (§11), minus student, mortgage, business, consumer, tax, and court debts.
+- All balancing remains in real PPP dollars, while the interface also shows country currency symbols and annual modeled exchange rates. Migration and remittances charge exchange fees.
+- Country-sensitive savings, personal-loan, credit-card, and mortgage rates apply annually. Players can set emergency, housing, and retirement savings goals and seek bankruptcy relief through Law when eligible.
+- Couples retain personal accounts and choose a negotiated household contribution arrangement. The yearly statement distinguishes income, expenses, taxes, non-cash asset changes, account transfers, and household versus personal results.
 
 ### 8.2 Investment vehicles
 Available from age 18 via the Finances tab (availability gated: tier 1–2 countries lack stock/bond access unless Rich — informal alternatives only):
@@ -190,7 +192,9 @@ Available from age 18 via the Finances tab (availability gated: tier 1–2 count
 Returns are real (inflation-adjusted); country inflation shocks (hyperinflation event for fragile economies) can wipe savings/bonds but not gold/property.
 
 ### 8.3 Taxes
-Each country gets a `taxProfile` (see DATA_PIPELINE): a 3-bracket effective income tax + flat social-contribution rate, hand-tuned for ~30 flagship countries, tier-defaulted elsewhere:
+Each country gets a simplified `taxProfile`: progressive, flat, or no personal income tax plus payroll/social-insurance contributions, with optional joint spouse filing where modeled. The annual statement shows marginal and effective rates, investment gains, consumption, gifts, inheritance/estate, retirement withdrawals, withholding refunds/balances, and current tax residency. Deliberate underreporting can trigger audits, penalties, tax debt, and a Law case.
+
+Progressive defaults still use median-wage brackets:
 
 | Tax tier | Brackets (of median-wage multiples: <1× / 1–3× / >3×) | Social contrib. |
 |---|---|---|
@@ -199,7 +203,7 @@ Each country gets a `taxProfile` (see DATA_PIPELINE): a 3-bracket effective inco
 | Moderate (US-like) | 8% / 18% / 28% | 8% |
 | Heavy (EU welfare states) | 15% / 30% / 45% | 15% |
 
-The yearly tax statement itemizes income tax + social contributions. Informal/illegal work is untaxed but earns no benefits and risks fines. Capital gains taxed at a flat 15% in Moderate/Heavy countries when realized.
+Informal/illegal work remains outside ordinary withholding but earns no benefits and risks penalties. Investment rates vary by tax tier and apply when gains are realized; pension withdrawals use a reduced retirement rate. Estate and gift exemptions and spouse treatment come from inheritance rules.
 
 ### 8.4 Cost of living & housing
 Base yearly cost of living = `0.45 × median wage`, times city-tier multiplier: **capital 1.3× / major city 1.15× / secondary 1.0× / town 0.85× / rural 0.7×**, times household size factor (+25% per dependent, spouse counts half if also working). Rent = 30% of CoL separately; buying a home (price ≈ 6× median wage × city multiplier, mortgage available tier ≥ 3 at 20% down) removes rent. Wealthier lifestyle option (checkbox: Frugal −20% CoL/−2 Happiness, Normal, Lavish +50% CoL/+3 Happiness).

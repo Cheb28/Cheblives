@@ -12,6 +12,7 @@ import { submitMigration, naturalize, isIrregular, visaWorkFraction } from './im
 import { clearPlannedCrime, planCrime } from './judicial.js';
 import { applyForSocialHousing, chooseHousing, homePrice, setChildContributionPolicy } from './housing.js';
 import { marriageNameChoices, requestLegalNameChange, setChildName } from './names.js';
+import { drawCredit, openCreditCard, recordInvestmentSale, repayConsumerDebt, requestBudgetChange, sendRemittance, setFinancialGoal, setTaxCompliance, setTaxFilingChoice, takePersonalLoan, transferBetweenAccounts } from './financialSystems.js';
 
 export function setActivities(state, ids) { state.character.selectedActivities = ids; }
 export function setLifestyle(state, ls) { state.character.lifestyle = ls; }
@@ -74,13 +75,24 @@ export function setPlannedCrime(state, crimeId) { return crimeId ? planCrime(sta
 export function applyForMigration(state,targetId,routeId){return submitMigration(state,targetId,routeId);}
 export function applyForCitizenship(state){return naturalize(state.character);}
 export function setPartTimeWork(state,enabled){const ch=state.character,c=COUNTRY_BY_ID[ch.countryId];if(ch.age>=laborProfile(c).lightWorkAge&&ch.age<18){ch.partTimeWork=enabled;return true;}if(ch.age>=18&&ch.employmentStatus==='student'&&ch.immigration?.residence?.visa?.kind==='student'&&visaWorkFraction(ch)>0){ch.partTimeWork=enabled;return true;}return false;}
-export function buyInvestment(state,id,amount){const ch=state.character,c=COUNTRY_BY_ID[ch.countryId],d=INVESTMENTS[id];amount=Math.max(0,Number(amount)||0);if(!d||amount<=0||!d.gate(c,ch)||ch.money.bank<amount)return false;ch.money.bank-=amount;ch.investments[id]=(ch.investments[id]||0)+amount;return true;}
-export function sellInvestment(state,id,amount){const ch=state.character,d=INVESTMENTS[id];if(!d||d.locked&&ch.age<65)return false;amount=Math.min(ch.investments[id]||0,Math.max(0,Number(amount)||0));ch.investments[id]-=amount;ch.money.bank+=amount;return true;}
+export function buyInvestment(state,id,amount){const ch=state.character,c=COUNTRY_BY_ID[ch.countryId],d=INVESTMENTS[id];amount=Math.max(0,Number(amount)||0);if(!d||amount<=0||!d.gate(c,ch)||ch.money.bank<amount)return false;ch.money.bank-=amount;ch.investments[id]=(ch.investments[id]||0)+amount;ch.investmentBasis||={};ch.investmentBasis[id]=(ch.investmentBasis[id]||0)+amount;return true;}
+export function sellInvestment(state,id,amount){const ch=state.character,c=COUNTRY_BY_ID[ch.countryId],d=INVESTMENTS[id];if(!d||d.locked&&ch.age<65)return false;const held=ch.investments[id]||0;amount=Math.min(held,Math.max(0,Number(amount)||0));if(amount<=0)return false;ch.investmentBasis||={};const basis=(ch.investmentBasis[id]||held)*(amount/held);ch.investmentBasis[id]=Math.max(0,(ch.investmentBasis[id]||held)-basis);ch.investments[id]-=amount;ch.money.bank+=amount;recordInvestmentSale(ch,c,id,amount,basis);return true;}
 export function buyHome(state){const ch=state.character,c=COUNTRY_BY_ID[ch.countryId],price=homePrice(c,ch),down=c.incomeTier>=3?price*.2:price;if(ch.ownsHome||ch.age<18||ch.money.bank<down)return false;ch.money.bank-=down;ch.debts.mortgage=price-down;ch.homeValue=price;ch.ownsHome=true;ch.housing.tenure='owner';ch.housing.application=null;return true;}
 export function foundBusiness(state,type){const ch=state.character,c=COUNTRY_BY_ID[ch.countryId];if(!['informal','registered'].includes(type))return false;const capital=medianWage(c)*(type==='informal'?.5:5);if(ch.age<18||ch.business||ch.money.bank<capital)return false;ch.money.bank-=capital;ch.business={type,capital,employees:0,loan:0,lastProfit:0,lastRevenue:0,lastWages:0,lastInterest:0};return true;}
 export function hireEmployee(state){const ch=state.character;if(!ch.business)return false;ch.business.employees+=1;return true;}
 export function takeBusinessLoan(state){const ch=state.character,c=COUNTRY_BY_ID[ch.countryId];if(!ch.business||c.incomeTier<2)return false;const a=medianWage(c)*2;ch.business.loan+=a;ch.business.capital+=a;return true;}
 export function sellBusiness(state){const ch=state.character;if(!ch.business)return false;ch.money.bank+=Math.max(0,ch.business.capital+ch.business.lastProfit*.5-ch.business.loan);ch.business=null;return true;}
+export function transferAccountFunds(state,direction,amount){const ch=state.character;return transferBetweenAccounts(ch,COUNTRY_BY_ID[ch.countryId],direction,amount);}
+export function proposeHouseholdBudget(state,mode,playerRate,spouseRate){const ch=state.character;return requestBudgetChange(ch,COUNTRY_BY_ID[ch.countryId],mode,playerRate,spouseRate);}
+export function remitToFamily(state,personId,amount){const ch=state.character,p=[...(ch.family||[]),...(ch.spouse?[ch.spouse]:[])].find(x=>x.id===personId);return sendRemittance(ch,COUNTRY_BY_ID[ch.countryId],p,amount);}
+export function applyPersonalLoan(state){const ch=state.character;return takePersonalLoan(ch,COUNTRY_BY_ID[ch.countryId]);}
+export function applyCreditCard(state){const ch=state.character;return openCreditCard(ch,COUNTRY_BY_ID[ch.countryId]);}
+export function useCreditCard(state,amount){const ch=state.character;return drawCredit(ch,COUNTRY_BY_ID[ch.countryId],amount);}
+export function payConsumerDebt(state,kind,amount){const ch=state.character;return repayConsumerDebt(ch,COUNTRY_BY_ID[ch.countryId],kind,amount);}
+export function updateFinancialGoal(state,key,amount){const ch=state.character;return setFinancialGoal(ch,COUNTRY_BY_ID[ch.countryId],key,amount);}
+export function updateTaxCompliance(state,value){const ch=state.character;return setTaxCompliance(ch,COUNTRY_BY_ID[ch.countryId],value);}
+export function updateTaxFilingChoice(state,value){const ch=state.character;return setTaxFilingChoice(ch,COUNTRY_BY_ID[ch.countryId],value);}
+export function filePersonalBankruptcy(state){const ch=state.character,c=COUNTRY_BY_ID[ch.countryId],eligible=(ch.debts.personalLoan||0)+(ch.debts.creditCard||0)+(ch.debts.business||0)+(ch.debts.tax||0);if(ch.age<18||eligible<medianWage(c)*.5||ch.judicial?.activeCase)return false;ch.judicial.bankruptcyDue=eligible;return true;}
 
 export function quitJob(state) {
   const ch = state.character, country = COUNTRY_BY_ID[ch.countryId];
