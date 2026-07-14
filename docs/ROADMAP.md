@@ -69,11 +69,116 @@ verification are implemented. Remaining optional depth is tracked in the expansi
 
 **Verify:** export, reload, and import resume an identical life. No broken controls, unreachable decisions, NaN values, duplicate finance entries, or years that advance by more than one occur. Production builds and the full automated suite pass; major screens receive browser and keyboard checks. Run the GAME_DESIGN §16 traceability table from top to bottom and confirm every row is playable. Complete several full lives without progression blockers and record remaining non-critical limitations.
 
+## Phase 10 — Family and Social Life
+
+**Status: complete.** Dating compatibility, friendship, country-specific same-sex relationship
+profiles, relationship stages, pregnancy and family building, child development, caregiving,
+domestic-safety choices, estrangement/reconciliation/favoritism, inheritance-dispute risk, skill
+XP/levels, and education credentials are implemented and tested.
+
+## Phase 10.1 — Names and Legal Identity
+
+**Status: planned.** Let the player enter or generate a name. Generate culturally contextual given
+and family names for parents, siblings, partners, friends, children, and grandchildren. Naming
+profiles may use paternal, maternal, bilateral, double-surname, patronymic/matronymic, or
+family-name-first conventions according to country, culture, religion, and family background.
+Multicultural families may draw from either parent's tradition without rigidly assigning every name
+by ethnicity or religion. The player can name children.
+
+Track birth name, current legal name, preferred display name, nickname, and previous names. Marriage
+offers keeping, adopting, appending, or combining surnames only where culturally and legally
+appropriate, including traditions in which spouses normally retain their birth names. Voluntary
+legal name changes depend on country eligibility, procedure, restrictions, and cost.
+
+**Verify:** generated households have internally consistent but non-identical names across several
+single- and multinational country profiles. Manual player and child names persist through saves,
+marriage, migration, divorce, death, and heir continuation.
+
+## Phase 10.2 — Interactive Map and Country Information
+
+**Status: planned.** Add a lazy-loaded MapLibre map using an appropriate CARTO/OpenStreetMap
+basemap. Store country and modeled-location coordinates locally rather than depending on live
+geocoding. Zoom to the current country/location, update after migration, and highlight home and
+destination during travel. Display required map-data attribution on the map and MapLibre licensing
+in About/Credits. Do not request browser geolocation.
+
+Add an accessible text facts panel containing flag, country, capital, modeled location, population,
+primary languages, currency, income/development tier, life expectancy, healthcare, education,
+employment and gender-rights profile, same-sex relationship status, military/conscription,
+welfare/housing, tax/inheritance, immigration/citizenship, and current economic/conflict conditions.
+Include an “About This Country Model” note explaining that profiles are simplified simulation data,
+not legal advice.
+
+**Verify:** maps load only when opened, remain usable on mobile and by keyboard, and always have an
+equivalent facts panel. Birth, migration, travel, and return update the correct locations without
+increasing the initial bundle excessively or producing tile/attribution errors.
+
+## Phase 10.3 — Religion, Belief, Charity, and Religious Legacy
+
+**Status: planned.** Add a Religion tab. Keep public religious identity, private belief, observance,
+sect/denomination, and community standing separate rather than treating piety as a moral judgment.
+Model annual obligations and observance choices appropriate to the one-year turn: worship, fasting,
+study, ceremonies, pilgrimage, dietary practice, and community participation are yearly commitments
+or outcomes rather than daily actions.
+
+Support private or open apostasy, conversion, interfaith households, family/community reactions,
+and country-dependent legal or social consequences. Limit sects to major locally relevant branches.
+Add tradition-specific religious careers and qualifications, including priests/pastors, Catholic
+priests, imams, rabbis, chaplains, teachers/scholars, and monastic vocations where applicable.
+
+Add annual religious and secular giving: zakat, sadaqah, Christian almsgiving/tithing, tzedakah,
+dana, sewa, ordinary charity, charitable bequests, and eligible religious/community endowments.
+Players choose an amount and purpose such as poverty relief, healthcare, education, disaster relief,
+refugees, religious institutions, or community projects. Giving is itemized in finances and may
+affect observance, happiness, community reputation, tax treatment, and measurable charitable impact;
+it never guarantees repayment or an objectively declared afterlife reward.
+
+End-of-life summaries describe charitable and religious legacy from the viewpoint of the
+character's tradition. Outcomes may include respected community member, scholar/teacher, elder,
+philanthropist, or founder of a continuing institution/endowment. Traditions that formally recognize
+saints may support an exceptionally rare posthumous, multi-generational investigation and recognition
+path based on a lifetime of service and later evidence—not donations alone. Other traditions receive
+their own appropriate legacy outcomes, and heirs may encounter later events about an ancestor.
+
+Add Aliyah as a reviewed immigration route tied to modeled eligibility, identity/conversion
+recognition, documentation, and application review; conversion never produces automatic approval.
+All apostasy, conversion, clergy, charity, tax, and immigration profiles require a source and legal-
+data audit before implementation.
+
+**Verify:** private belief and public identity can diverge; conversions and religious careers take
+annual time and qualifications; consequences vary by country; charitable payments reconcile in the
+financial statement; wills/endowments survive death; and legacy events remain rare,
+tradition-specific, non-blocking, and compatible with heir continuation.
+
+## Phase 10.4 — Personal and Family Presentation
+
+**Status: planned.** Add a profile card showing legal/preferred name, age, location, citizenships,
+languages, occupation, credentials, optionally displayed religious identity, and family status. Add
+a family tree covering parents, nationalities, spouses, children, and grandchildren, plus a household
+summary. Replace bare relationship numbers with supportive, close, ordinary, strained, hostile, or
+estranged descriptions while retaining the underlying simulation score. Add locally contextual
+school, workplace, and neighborhood descriptions without commuting mechanics.
+
+**Verify:** profile, family tree, household membership, names, relationship labels, and descriptions
+update after birth, marriage, separation, adoption, migration, moving out, death, and heir
+continuation. Important information remains understandable without color or the map.
+
+## Phase 10.5 — Personalization Integration and Polish
+
+**Status: planned.** Migrate older saves, complete cultural-data and country-law review, test
+multinational and multi-generational naming/religion cases, audit accessibility, lazy-load map and
+large cultural datasets, and run full balance/build/browser verification before Phase 11 begins.
+
+**Verify:** existing saves load safely; all Phase 1–10.5 tests pass; no turn advances more than one
+year; generated cultural details remain editable where appropriate; the production build has no new
+bundle warning; and GitHub Pages works without console, attribution, or accessibility errors.
+
 ---
 
 ## Deferred / non-goals (do not build unless asked)
 
-Additional optional depth is tracked in `EXPANSION_BACKLOG.md`. The nine-phase playable roadmap is
-complete; later work should be treated as expansion or maintenance rather than an unfinished phase.
+Additional optional depth is tracked in `EXPANSION_BACKLOG.md`. The original nine-phase playable
+roadmap and Phase 10 are complete. Phases 10.1–10.5 are planned personalization expansions; the
+annual employment expansion remains reserved as Phase 11.
 
 Multiplayer, real exchange rates, sub-national regions, deep social simulation, achievements/meta-progression, mobile layout (desktop-first; keep it responsive-friendly but don't invest), localization.
