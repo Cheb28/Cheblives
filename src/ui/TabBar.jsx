@@ -1,9 +1,10 @@
 // Top tab bar. Tabs with phase > CURRENT_PHASE are disabled placeholders,
 // wired now so the structure matches GAME_DESIGN section 15.
-export const CURRENT_PHASE = 9;
+export const CURRENT_PHASE = 10;
 
 export const TABS = [
   { id: 'overview', label: 'Overview', phase: 1 },
+  { id: 'country', label: 'Country', phase: 10 },
   { id: 'activities', label: 'Activities', phase: 2 },
   { id: 'finances', label: 'Finances', phase: 2 },
   { id: 'career', label: 'Career', phase: 2 },

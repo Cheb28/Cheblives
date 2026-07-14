@@ -116,6 +116,39 @@ function dig(obj, ...path) {
   return o;
 }
 
+// Parse Factbook coordinates such as "38 00 N, 97 00 W" into MapLibre's
+// [longitude, latitude] order. Some entries include seconds, so accept all
+// three components while keeping the generated country file compact.
+function parseCoordinates(value) {
+  const s = stripHtml(value || '');
+  const match = s.match(/(\d+(?:\.\d+)?(?:\s+\d+(?:\.\d+)?)?(?:\s+\d+(?:\.\d+)?)?\s+[NS])\s*,\s*(\d+(?:\.\d+)?(?:\s+\d+(?:\.\d+)?)?(?:\s+\d+(?:\.\d+)?)?\s+[EW])/i);
+  if (!match) return null;
+  const parts = [match[1], match[2]];
+  const parsePart = (part) => {
+    const m = part.match(/^(\d+(?:\.\d+)?)\s+(?:(\d+(?:\.\d+)?)\s+)?(?:(\d+(?:\.\d+)?)\s+)?([NSEW])$/i);
+    if (!m) return null;
+    const value = Number(m[1]) + Number(m[2] || 0) / 60 + Number(m[3] || 0) / 3600;
+    return /[SW]/i.test(m[4]) ? -value : value;
+  };
+  const lat = parsePart(parts[0]), lon = parsePart(parts[1]);
+  return Number.isFinite(lat) && Number.isFinite(lon) ? [lon, lat] : null;
+}
+
+function parseCurrency(exchangeRates, countryName) {
+  const raw = stripHtml(text(exchangeRates?.Currency) || '');
+  if (raw) return raw.replace(/\s+per US dollar.*$/i, '').replace(/\s+-\s*$/, '').trim();
+  if (/US dollar/i.test(stripHtml(text(exchangeRates) || ''))) return 'US dollars (USD)';
+  if (countryName === 'Gaza, Gaza Strip') return 'new Israeli shekels (ILS)';
+  if (countryName === 'United States') return 'US dollars (USD)';
+  return null;
+}
+
+function flagCode(raw, countryName) {
+  if (countryName === 'United Kingdom') return 'GB';
+  const value = text(dig(raw, 'Communications', 'Internet country code')) || '';
+  return value.match(/\.([a-z]{2})\b/i)?.[1]?.toUpperCase() || null;
+}
+
 // ---- Cities (DATA_PIPELINE section 4.1) ---------------------------------
 
 function titleCaseIfShouting(name) {
@@ -162,6 +195,7 @@ const MILITARY_OVERRIDES = {
   // active service. These are gameplay estimates of quota/lottery intake.
   'Brazil': { conscription: 'mandatory', serviceAge: 18, serviceLengthYears: 1, womenConscripted: false, callUpRate: 0.10 },
   'Thailand': { conscription: 'mandatory', serviceAge: 21, callUpEndAge: 29, serviceLengthYears: 2, womenConscripted: false, callUpRate: 0.20 },
+  'Turkey': { conscription: 'mandatory', serviceAge: 20, serviceLengthYears: 1, womenConscripted: false },
   'Russia': { conscription: 'mandatory', serviceAge: 18, callUpEndAge: 30, serviceLengthYears: 1, womenConscripted: false, callUpRate: 0.35, repeatCallUp: true },
   'Mexico': { conscription: 'mandatory', serviceAge: 18, serviceLengthYears: 1, womenConscripted: false, callUpRate: 0.25 },
   'Denmark': { conscription: 'mandatory', serviceAge: 18, serviceLengthYears: 11 / 12, womenConscripted: true, callUpRate: 0.25 },
@@ -356,6 +390,7 @@ const fallbackCounts = {};
 function bumpFallback(field) { fallbackCounts[field] = (fallbackCounts[field] || 0) + 1; }
 
 function buildCountry(raw, region, idCode) {
+  const Geo = raw['Geography'] || {};
   const P = raw['People and Society'] || {};
   const E = raw['Economy'] || {};
   const G = raw['Government'] || {};
@@ -389,6 +424,9 @@ function buildCountry(raw, region, idCode) {
 
   const rec = {
     id: idCode, name, region: REGION_NAMES[region] || region,
+    coordinates: parseCoordinates(text(Geo['Geographic coordinates'])),
+    currency: parseCurrency(E['Exchange rates'], name),
+    flagCode: flagCode(raw, name),
     population,
     gdpPerCapita,
     incomeTier: it,

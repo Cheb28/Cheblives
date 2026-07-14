@@ -61,6 +61,9 @@ Output record shape per country (all rates as plain numbers, money in PPP dollar
 | `taxRevenuePct` | `Economy → Taxes and other revenues` | `num` |
 | `govType` | `Government → Government type → text` | keep string (lowercased) |
 | `capital` | `Government → Capital → name → text` | strip notes/semicolons |
+| `coordinates` | `Geography → Geographic coordinates → text` | convert degrees/minutes/seconds to `[longitude, latitude]` |
+| `currency` | `Economy → Exchange rates → Currency` | remove the exchange-rate suffix; recognize US-dollar text fallbacks |
+| `flagCode` | `Communications → Internet country code` | first two-letter code, with United Kingdom normalized to `GB` |
 | `legalSystem` | `Government → Legal system → text` | keep string |
 | `citizenship` | `Government → Citizenship` sub-object | §4 |
 | `military` | `Military and Security` section | §4 |

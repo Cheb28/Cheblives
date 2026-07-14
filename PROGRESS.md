@@ -2,7 +2,21 @@
 
 Handoff notes for whoever continues this build (see `START_HERE.txt` first, then `docs/`).
 
-## Current status: Phase 10.1.2 COMPLETE — Identity, Experience, Languages, and Settings
+## Current status: Phase 10.2 COMPLETE — Interactive Map and Country Information
+
+### Phase 10.2 — Interactive Map and Country Information
+
+- Added a dedicated Country tab and a compact Overview link; World remains the country-comparison
+  browser. The map follows migration and shows a second birth-country marker when applicable.
+- Added MapLibre with a CARTO Dark Matter/OpenStreetMap basemap as a nested lazy chunk, preserving
+  initial-load performance. Attribution appears on the map, below it, and in Credits.
+- Extended the local Factbook pipeline with coordinates, currencies, and flag codes for all 208
+  playable countries, so the app never needs live geocoding or browser geolocation.
+- Added an accessible, responsive facts panel covering location, population, languages, currency,
+  development, health, education, work and gender rights, relationships, military, welfare, housing,
+  tax, inheritance, law, immigration, citizenship, economics, and conflict conditions.
+- Added an explicit simplified-model/not-legal-advice note and Phase 10.2 regression coverage for
+  complete metadata, facts, migration updates, attribution, and lazy loading.
 
 ### Phase 10.1.2 — Identity, Experience, Languages, and Settings
 

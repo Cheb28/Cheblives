@@ -11,6 +11,9 @@ as your own. See [LICENSE](LICENSE) for the complete permission notice.
 
 - Discord: **starmerite_1**
 - Project: **Cheb's Human Atlas**
+- Interactive maps use MapLibre GL JS with CARTO basemaps and OpenStreetMap data.
+  Map data © OpenStreetMap contributors; basemap © CARTO. MapLibre GL JS is
+  available under its open-source license.
 
 Country profiles are simplified for simulation and are not legal, financial, medical, or
 immigration advice.

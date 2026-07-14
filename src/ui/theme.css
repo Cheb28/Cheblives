@@ -162,6 +162,38 @@ select, input {
 .world-item .rg { color: var(--text-dim); font-size: 12px; }
 .world-item.crime-choice { width: 100%; background: transparent; border: 0; border-bottom: 1px solid #ffffff08; text-align: left; }
 
+/* ---- Phase 10.2: current-country map and accessible facts ---- */
+.country-screen { display:grid; gap:14px; }
+.country-hero { display:flex; align-items:center; justify-content:space-between; gap:18px; }
+.country-hero > div { display:grid; grid-template-columns:auto 1fr; align-items:center; column-gap:14px; }
+.country-hero h2 { margin:0; font-size:24px; }
+.country-hero p { grid-column:2; margin:3px 0 0; color:var(--text-dim); }
+.country-flag { grid-row:1 / span 2; font-size:44px; line-height:1; }
+.country-map-panel { padding-bottom:11px; }
+.country-map-frame { position:relative; min-height:360px; overflow:hidden; border:1px solid var(--border); border-radius:9px; background:#0b1119; }
+.country-map { width:100%; height:360px; }
+.country-map-placeholder { min-height:360px; display:grid; place-items:center; color:var(--text-dim); border:1px solid var(--border); border-radius:9px; }
+.country-map-error { position:absolute; left:12px; bottom:12px; z-index:2; max-width:420px; padding:9px 11px; border:1px solid var(--warn); border-radius:7px; background:var(--panel); }
+.map-attribution { margin:7px 2px 0; font-size:11px; color:var(--text-dim); }
+.map-attribution a, .credits a { color:var(--text-dim); }
+.country-map-marker { width:18px; height:18px; border:3px solid white; border-radius:50%; box-shadow:0 2px 10px #000c; cursor:pointer; }
+.country-map-marker.current { background:var(--accent); }
+.country-map-marker.home { width:14px; height:14px; background:var(--accent-2); }
+.country-facts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 22px; margin:0; }
+.country-fact { display:grid; grid-template-columns:minmax(130px,.8fr) minmax(0,1.2fr); gap:12px; padding:9px 0; border-bottom:1px solid #ffffff0b; }
+.country-fact dt { color:var(--text-dim); }
+.country-fact dd { margin:0; text-align:right; overflow-wrap:anywhere; }
+.country-fact small { display:block; margin-top:4px; color:var(--text-dim); line-height:1.35; }
+.country-model-note p { margin:0; color:var(--text-dim); line-height:1.5; }
+.maplibregl-ctrl-attrib { color:#222; }
+@media (max-width:820px) { .country-facts { grid-template-columns:1fr; } }
+@media (max-width:560px) {
+  .country-hero { align-items:flex-start; flex-direction:column; }
+  .country-map-frame, .country-map, .country-map-placeholder { min-height:300px; height:300px; }
+  .country-fact { grid-template-columns:1fr; gap:4px; }
+  .country-fact dd { text-align:left; }
+}
+
 .muted { color: var(--text-dim); }
 .big-num { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
 

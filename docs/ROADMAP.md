@@ -134,22 +134,24 @@ languages and old-save migration work; and all autosave intervals are covered by
 
 ## Phase 10.2 — Interactive Map and Country Information
 
-**Status: planned.** Add a lazy-loaded MapLibre map using an appropriate CARTO/OpenStreetMap
-basemap. Store country and modeled-location coordinates locally rather than depending on live
-geocoding. Zoom to the current country/location, update after migration, and highlight home and
-destination during travel. Display required map-data attribution on the map and MapLibre licensing
-in About/Credits. Do not request browser geolocation.
+**Status: complete.** Added a dedicated, lazy-loaded Country tab with a MapLibre map using CARTO's
+Dark Matter/OpenStreetMap basemap. Country coordinates, currencies, and flag codes are generated
+locally from the Factbook source rather than live geocoding. The map follows the current country
+after migration and shows both current and birth countries when they differ. Required attribution
+appears beside and within the map and in Credits; browser geolocation is never requested.
 
-Add an accessible text facts panel containing flag, country, capital, modeled location, population,
+The accessible text facts panel contains flag, country, capital, modeled location, population,
 primary languages, currency, income/development tier, life expectancy, healthcare, education,
 employment and gender-rights profile, same-sex relationship status, military/conscription,
 welfare/housing, tax/inheritance, immigration/citizenship, and current economic/conflict conditions.
-Include an “About This Country Model” note explaining that profiles are simplified simulation data,
-not legal advice.
+It includes an “About This Country Model” note explaining that profiles are simplified simulation
+data, not legal advice. Overview retains a compact current-country card linking to this screen,
+while World remains the comparison browser.
 
-**Verify:** maps load only when opened, remain usable on mobile and by keyboard, and always have an
-equivalent facts panel. Birth, migration, travel, and return update the correct locations without
-increasing the initial bundle excessively or producing tile/attribution errors.
+**Verified:** all 208 playable countries have valid local coordinates, currencies, flag codes, and
+complete text facts. The map library is a separate nested lazy chunk and does not increase the
+initial JavaScript bundle. Birth and migration keep the correct current/origin locations; responsive
+and keyboard-accessible text content remains usable if remote map tiles cannot load.
 
 ## Phase 10.3 — Religion, Belief, Charity, and Religious Legacy
 

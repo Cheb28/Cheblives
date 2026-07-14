@@ -9,6 +9,7 @@ import { slotBudget } from './engine/activities.js';
 import Credits from './ui/Credits.jsx';
 
 const Overview = lazy(() => import('./ui/tabs/Overview.jsx'));
+const Country = lazy(() => import('./ui/tabs/Country.jsx'));
 const World = lazy(() => import('./ui/tabs/World.jsx'));
 const Activities = lazy(() => import('./ui/tabs/Activities.jsx'));
 const Finances = lazy(() => import('./ui/tabs/Finances.jsx'));
@@ -110,7 +111,8 @@ export default function App() {
       <TabBar active={tab} onChange={setTab} badges={badges} />
       <div className="content">
         <Suspense fallback={<div className="loading" role="status">Loading screen…</div>}>
-        {tab === 'overview' && <Overview state={state} />}
+        {tab === 'overview' && <Overview state={state} onOpenCountry={() => setTab('country')} />}
+        {tab === 'country' && <Country state={state} />}
         {tab === 'activities' && <Activities {...tabProps} />}
         {tab === 'finances' && <Finances {...tabProps} />}
         {tab === 'career' && <Career {...tabProps} />}
