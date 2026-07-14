@@ -1,0 +1,116 @@
+HANDOFF BRIEFING — RealLives Sim
+For the AI building this project (Claude Opus 4.8, ChatGPT 5.6, or any capable coding model)
+Written 2026-07-13 by the AI session that produced the specs, with the project owner's approval.
+
+======================================================================
+1. WHAT THIS IS
+======================================================================
+A single-player, browser-based life simulator in the spirit of "Real Lives":
+the player is born anywhere on Earth (208 playable countries) and lives one
+life, one year per turn, shaped by that country's REAL economy, healthcare,
+education, taxes, military/conscription, legal system, and immigration rules.
+Country data is derived from the CIA World Factbook JSON already unzipped in
+data/factbook/.
+
+The design phase is DONE. Do not redesign. Your job is to build it.
+
+======================================================================
+2. READ IN THIS ORDER (all in docs/)
+======================================================================
+1. docs/ROADMAP.md       - 9 completed build phases with verify checklists.
+                           Read with PROGRESS.md before maintenance or expansion work.
+2. docs/GAME_DESIGN.md   - the master spec. Every mechanic, with starting
+                           numbers in tables. Section 16 maps the owner's 20
+                           original requirements to sections.
+3. docs/DATA_PIPELINE.md - exact spec for scripts/build-countries.mjs, which
+                           turns data/factbook/ into src/data/countries.json.
+                           Field paths are VERIFIED against the real files;
+                           trust it over your assumptions.
+
+======================================================================
+3. DECISIONS ALREADY LOCKED WITH THE OWNER (do not reopen)
+======================================================================
+- React + Vite SPA, client-only, no backend.
+- 1 game year per turn. Not months. Event interrupts are handled as a
+  never-blocking Events tab with stated defaults (GAME_DESIGN section 14).
+- Cities = factbook major urban areas + generic Secondary city/Town/Rural
+  tiers. No external city dataset.
+- Exactly 208 playable countries: population >= 50k + raw GDP pc + a capital
+  or city, PLUS a hand include list (Monaco, Liechtenstein, San Marino, and
+  West Bank with manually supplied cities), MINUS non-countries like the EU.
+  Pipeline must hard-fail on any other count.
+- Birth: full customization OR "Born anywhere" random weighted by
+  population x birth rate (real odds of being born there), partial locks
+  allowed (GAME_DESIGN section 2).
+- Draft/military system is a required feature (GAME_DESIGN section 7), added
+  by the owner on top of the original 20 ideas.
+- UI is a top tab bar, one window per tab. Organized, data-dense,
+  control-room feel, dark default. NO modal popups except player death.
+
+======================================================================
+4. HOW TO WORK (this matters to the owner)
+======================================================================
+- Build ONE PHASE AT A TIME in roadmap order. After each phase, actually run
+  the app and walk the phase's Verify checklist by playing it. Do not stack
+  unverified phases.
+- Keep a PROGRESS.md at the repo root: current phase, what's done, any
+  deviation from spec and why. The owner switches AI sessions/models; this
+  file plus the docs must be enough for the next session to continue cold.
+- The owner works iteratively and will test builds himself. Prefer small,
+  working increments over big drops. It should compile and play at all times.
+- The spec's numbers (activity effects, wages, probabilities) are STARTING
+  values. Tuning them during play-testing is expected and encouraged;
+  changing mechanics or scope is not - ask first.
+- If the spec is silent or ambiguous on something, make the simplest choice
+  consistent with the spec's spirit, note it in PROGRESS.md, and move on.
+  Ask the owner only for genuine scope decisions.
+- Environment: Windows 11. Watch path separators and shell differences in
+  any scripts you write.
+
+======================================================================
+5. TECHNICAL ADVICE FROM THE SPEC-WRITING SESSION
+======================================================================
+- BUILD THE PIPELINE FIRST and make its validation report pass before any UI
+  work. Everything downstream leans on countries.json. The factbook data is
+  strings-with-numbers ("$62,800 (2024 est.)"); the parse helpers in
+  DATA_PIPELINE section 2 (num, latest, pctList) cover ~95% of it. Many
+  fields are year-keyed sub-objects - handle BOTH shapes everywhere.
+- Coverage is uneven. Two fields are missing from ~40% of ALL files
+  including Nigeria (taxes % of GDP, school life expectancy). The tier
+  fallback tables in DATA_PIPELINE section 5 are not an edge case - they
+  fire constantly. Never let a null reach the UI.
+- Route ALL randomness through one seeded RNG utility from day one. The
+  verify checklists depend on reproducible lives, and you will thank
+  yourself when debugging balance.
+- Make events DATA-DRIVEN (definitions as objects: trigger, weight, options,
+  default, effects) rather than hard-coded. Phases 3-7 keep adding event
+  types; the framework quality decides how painful that is.
+- Game state must be one plain serializable object. Saves, autosave, and
+  JSON export/import (Phase 7) come nearly free if you never break this.
+- All gameplay logic keys off TIERS (income tier, welfare tier, law tier,
+  healthcare archetype), never off country names - except the explicit
+  hand-tuned override tables the pipeline spec defines. That's how 208
+  countries stay maintainable.
+- Wages/prices are in PPP dollars. There are NO exchange rates. Emigration
+  converts net worth by the GDP-pc ratio rule (GAME_DESIGN section 6/12).
+- Good sanity checks that caught real issues while speccing: South Korea
+  parses as mandatory conscription, Germany voluntary, Costa Rica no armed
+  forces; Nigeria's top city is Lagos ~15.9M; West Bank has NULL capital and
+  city fields (hence its manual include).
+- Suggested (not mandated) structure: src/engine/ (pure simulation logic,
+  no React), src/data/, src/ui/ per tab component. Keeping the engine pure
+  makes the verify checklists scriptable.
+
+======================================================================
+6. ABOUT THE OWNER
+======================================================================
+- Experienced with this workflow (phased ROADMAP, verify each phase); it has
+  worked well for him before.
+- Cares most about: world realism per country, a sophisticated financial
+  system, organization/clean tabbed UI, and not being nagged by popups.
+- Family/social simulation is deliberately shallow - don't deepen it.
+- Deferred non-goals are listed at the bottom of ROADMAP.md. Don't build
+  them unless he asks.
+
+Good luck. The specs are self-contained - if you find a contradiction
+between them and this file, the docs win, and note it in PROGRESS.md.

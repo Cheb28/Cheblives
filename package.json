@@ -1,0 +1,21 @@
+{
+  "name": "reallives-sim",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "data": "node scripts/build-countries.mjs",
+    "test": "node scripts/regression-test.mjs && node scripts/sim-test.mjs && node scripts/sim-test2.mjs && node scripts/sim-test3.mjs && node scripts/sim-test4.mjs && node scripts/sim-test5.mjs && node scripts/health-expansion-test.mjs && node scripts/sim-test6.mjs && node scripts/sim-test7.mjs && node scripts/sim-test8.mjs && node scripts/sim-test9.mjs"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.11"
+  }
+}
