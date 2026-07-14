@@ -1,4 +1,4 @@
-# Cheblives — Game Design Document
+# Cheb's Human Atlas — Game Design Document
 
 > **You are building** a single-player, country-driven life simulator: the player is born in any country on Earth and lives one life, year by year, shaped by that country's economy, healthcare, education, military, legal, and immigration systems. This document is the master design spec. Country data comes from a preprocessed CIA World Factbook dataset — see `DATA_PIPELINE.md` for how raw data in `data/factbook/` becomes `src/data/countries.json`. Build order and per-phase verification live in `ROADMAP.md`. All numbers in this document are starting values, tunable during balancing.
 
@@ -99,7 +99,10 @@ School and jobs consume time implicitly and are not activities. Activity effects
 | Family time | +relationship scores ×2, +1 Happiness | requires spouse or children |
 | Rest / leisure | +2 Happiness, +1 Health | |
 
-Unchecked slots default to Rest at half effect. Effects are the tunable table for balancing.
+Unchecked slots default to Rest at half effect. A selected routine persists into later years until
+the player changes it. When circumstances make an activity unavailable or reduce the slot budget,
+the engine removes invalid choices and trims excess selections in priority order. Effects are the
+tunable table for balancing.
 
 ---
 

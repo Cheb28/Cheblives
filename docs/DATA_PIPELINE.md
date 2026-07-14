@@ -1,4 +1,4 @@
-# Cheblives — Data Pipeline Specification
+# Cheb's Human Atlas — Data Pipeline Specification
 
 > **You are building** a Node build script, `scripts/build-countries.mjs`, that reads the raw CIA World Factbook JSON in `data/factbook/` (one file per country, organized in region folders) and emits a single compact `src/data/countries.json` consumed by the game described in `GAME_DESIGN.md`. Run it manually (`node scripts/build-countries.mjs`) whenever the source data changes; commit the output. Target output size: **well under 2 MB** (the raw data is ~10 MB).
 

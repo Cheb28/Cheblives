@@ -1,4 +1,4 @@
-# Cheblives — Build Roadmap
+# Cheb's Human Atlas — Build Roadmap
 
 > **You are building** the game specified in `GAME_DESIGN.md`, powered by data built per `DATA_PIPELINE.md`. Work **one phase at a time, in order**: implement, then run the phase's *Verify* checklist by actually playing the app in a browser before moving on. Each phase leaves a working game. Keep a short `PROGRESS.md` noting the current phase and any deviations from spec.
 

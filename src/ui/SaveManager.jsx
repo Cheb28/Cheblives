@@ -23,7 +23,7 @@ export default function SaveManager({ state, onLoad, onNotice, revision = 0 }) {
     try {
       const blob = new Blob([exportSaveText(state, name)], { type: 'application/json' });
       const url = URL.createObjectURL(blob), a = document.createElement('a');
-      a.href = url; a.download = `cheblives-age-${state.character.age}.json`; a.click(); URL.revokeObjectURL(url);
+      a.href = url; a.download = `chebs-human-atlas-age-${state.character.age}.json`; a.click(); URL.revokeObjectURL(url);
       report('Save exported as JSON.');
     } catch (e) { report(e.message, true); }
   };

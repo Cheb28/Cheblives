@@ -3,7 +3,7 @@
 // employment -> finances/taxes -> drift/happiness -> mortality -> next situation.
 import { COUNTRY_BY_ID } from './countries.js';
 import { resolveEducation } from './education.js';
-import { applyActivities } from './activities.js';
+import { applyActivities, reconcileActivities } from './activities.js';
 import { resolveEmployment, wageFor, RETIREMENT_AGE, attemptHire } from './jobs.js';
 const jobsModule = { attemptHire };
 import {
@@ -372,8 +372,7 @@ export function advanceYear(state) {
   ch.stats.happiness = clamp(ch.stats.happiness + (LIFESTYLES[ch.lifestyle || 'normal']?.happiness || 0));
   const family = resolveFamily(ch, country, rng);
   for (const line of family.logs) { log.push(line); pushEvent(ch, 'family', line); }
-  // Each click resolves one yearly plan; the next year requires a fresh choice.
-  ch.selectedActivities = [];
+  // The routine persists. It is reconciled after all status changes below.
   if (ch.age >= 18 && ch.immigration?.residence?.visa?.kind !== 'student') ch.partTimeWork = false;
 
   // 5. Employment resolution (promotion/layoff) for civilian jobs; recession doubles layoffs.
@@ -456,6 +455,8 @@ export function advanceYear(state) {
   if(nationalityDecision){ch.pendingDecisions.push(nationalityDecision);pushEvent(ch,'political',nationalityDecision.prompt);log.push(nationalityDecision.prompt);}
 
   if ((ch.immigration?.languagePenaltyYears || 0) > 0) ch.immigration.languagePenaltyYears -= 1;
+
+  reconcileActivities(ch, COUNTRY_BY_ID[ch.countryId] || country);
 
   return { log, died: false };
 }

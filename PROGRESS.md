@@ -4,6 +4,13 @@ Handoff notes for whoever continues this build (see `START_HERE.txt` first, then
 
 ## Current status: Phase 10 COMPLETE — Family and Social Life expansion
 
+### Post-Phase-10 identity and routine polish
+
+- Renamed the public product, package, documentation, exports, saves, workflow, and Credits to
+  **Cheb's Human Atlas**. The existing GitHub repository slug remains the deployment address.
+- Activities now persist as a yearly routine. Situation changes remove unavailable selections and
+  trim only excess slots, while additional slots remain open for the player to fill.
+
 ### Phase 10 — Family and Social Life
 
 - Added dating preferences, partner personality, compatibility, engagement, marriage, committed

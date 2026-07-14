@@ -1,7 +1,7 @@
 import { deserialize, serialize } from './game.js';
 
 export const SAVE_SCHEMA_VERSION = 1;
-const PREFIX = 'cheblives.save.';
+const PREFIX = 'chebs-human-atlas.save.';
 const AUTOS = 3;
 
 function storage() {
@@ -12,17 +12,19 @@ function safeName(name) {
   return String(name || 'Manual save').trim().slice(0, 40) || 'Manual save';
 }
 
-export function saveEnvelope(state, name = 'Cheblives save') {
+export function saveEnvelope(state, name = "Cheb's Human Atlas save") {
   return {
-    app: 'Cheblives', schemaVersion: SAVE_SCHEMA_VERSION, savedAt: new Date().toISOString(),
+    app: "Cheb's Human Atlas", schemaVersion: SAVE_SCHEMA_VERSION, savedAt: new Date().toISOString(),
     name: safeName(name), payload: serialize(state),
   };
 }
 
 export function validateSave(value) {
-  if (!value || typeof value !== 'object') throw new Error('The file is not a Cheblives save.');
-  if (value.app !== 'Cheblives' || !value.payload) throw new Error('The save header is missing or invalid.');
-  if (value.schemaVersion > SAVE_SCHEMA_VERSION) throw new Error('This save was created by a newer version of Cheblives.');
+  if (!value || typeof value !== 'object') throw new Error("The file is not a Cheb's Human Atlas save.");
+  // Accept valid exported envelopes from earlier project names; newly written saves
+  // always use the current brand and storage prefix.
+  if (typeof value.app !== 'string' || !value.app || !value.payload) throw new Error('The save header is missing or invalid.');
+  if (value.schemaVersion > SAVE_SCHEMA_VERSION) throw new Error("This save was created by a newer version of Cheb's Human Atlas.");
   const p = value.payload;
   if (!Number.isFinite(p.seed) || !Number.isFinite(p.rngState) || !p.character || !Array.isArray(p.log)) {
     throw new Error('The save is incomplete or damaged.');

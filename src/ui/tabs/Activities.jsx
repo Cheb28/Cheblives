@@ -1,4 +1,4 @@
-import { COUNTRY_BY_ID } from '../../engine/countries.js';
+import { COUNTRY_BY_ID, medianWage } from '../../engine/countries.js';
 import { availableActivities, slotBudget } from '../../engine/activities.js';
 import { LIFESTYLES } from '../../engine/economy.js';
 import { setActivities, setLifestyle } from '../../engine/actions.js';
@@ -39,8 +39,8 @@ export default function Activities({ state, refresh }) {
           </div>
         ) : (
         <div className="muted" style={{ fontSize: 12, marginBottom: 10 }}>
-          Pick how you spend the coming year. These take effect when you advance.
-          Empty slots become rest. Your slots depend on your life stage ({ch.employmentStatus}).
+          Set your usual yearly routine. It remains selected until you change it or your circumstances
+          remove an activity or reduce your available slots. Empty slots become rest. Your slots depend on your life stage ({ch.employmentStatus}).
         </div>
         )}
         {ch.age>=6&&localLanguages.length>0&&<div style={{marginBottom:10}}>

@@ -5,6 +5,7 @@ import { enroll } from '../src/engine/education.js';
 import { chooseServe, enlistVoluntary } from '../src/engine/military.js';
 import { healthcareCoverage } from '../src/engine/health.js';
 import { resolveDecision } from '../src/engine/events.js';
+import { reconcileActivities } from '../src/engine/activities.js';
 
 const us = COUNTRY_BY_NAME['United States'];
 const korea = COUNTRY_BY_NAME['South Korea'];
@@ -100,13 +101,21 @@ const korea = COUNTRY_BY_NAME['South Korea'];
   assert(!labels.includes('State pension'));
 }
 
-// Activities are chosen for one year at a time.
+// Activities persist as a routine, but are trimmed when the available budget shrinks.
 {
   const s = newGame({ countryId: us.id, seed: 404 });
   s.character.age = 10;
   s.character.selectedActivities = ['reading'];
   stepYear(s);
-  assert.deepEqual(s.character.selectedActivities, []);
+  assert.deepEqual(s.character.selectedActivities, ['reading']);
+  s.character.age = 25;
+  s.character.employmentStatus = 'unemployed';
+  s.character.selectedActivities = ['reading', 'gym', 'socializing', 'rest'];
+  reconcileActivities(s.character, us);
+  assert.equal(s.character.selectedActivities.length, 4);
+  s.character.employmentStatus = 'military';
+  reconcileActivities(s.character, us);
+  assert.deepEqual(s.character.selectedActivities, ['reading']);
 }
 
 console.log('Regression checks passed.');

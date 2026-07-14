@@ -16,7 +16,7 @@ assert.deepEqual(serialize(restored),serialize(original));
 stepYear(original);stepYear(restored);
 assert.deepEqual(serialize(restored),serialize(original),'restored game follows the identical next year');
 assert.throws(()=>parseSave('{bad json'),/valid JSON/);
-assert.throws(()=>validateSave({app:'Cheblives',schemaVersion:999,payload:{}}),/newer version/);
+assert.throws(()=>validateSave({app:"Cheb's Human Atlas",schemaVersion:999,payload:{}}),/newer version/);
 
 // Core traceability contracts: global country coverage and all major state surfaces exist at birth.
 assert(COUNTRIES.length>=200,'at least 200 playable country records');

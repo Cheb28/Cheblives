@@ -41,7 +41,7 @@ export default function CharacterCreation({ onStart, saveTools }) {
 
   return <div className="centered">
     <div className="card">
-      <h1>Cheblives</h1>
+      <h1>Cheb's Human Atlas</h1>
       <div className="sub">Be born somewhere on Earth. Live one life, year by year.</div>
 
       {!mode && <>

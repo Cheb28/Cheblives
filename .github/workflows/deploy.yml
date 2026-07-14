@@ -1,4 +1,4 @@
-name: Deploy Cheblives to GitHub Pages
+name: Deploy Cheb's Human Atlas to GitHub Pages
 
 on:
   push:

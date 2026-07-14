@@ -70,6 +70,21 @@ export function availableActivities(ch, country) {
   return ACTIVITIES.filter(a => !a.available || a.available(ch, country));
 }
 
+// Keep the player's yearly routine until their situation actually invalidates it.
+// If the slot budget shrinks, retain the earliest selected priorities; if it grows,
+// leave the new slots empty so the player can choose how to use them.
+export function reconcileActivities(ch, country) {
+  const budget = slotBudget(ch);
+  const available = new Set(availableActivities(ch, country).map(a => a.id));
+  const next = [];
+  for (const id of ch.selectedActivities || []) {
+    if (next.length >= budget) break;
+    if (available.has(id) && !next.includes(id)) next.push(id);
+  }
+  ch.selectedActivities = next;
+  return next;
+}
+
 // Apply the player's selected activities for the year. Unchecked slots -> Rest at half.
 export function applyActivities(ch, country, rng, selectedIds) {
   const ctx = { country, rng, sideIncome: 0 };
