@@ -389,6 +389,13 @@ War events raise mortality, crash the local economy (−30% wages), unlock the a
 - **Religion:** mini-tabs separate public identity, private belief, persistent observance commitments,
   charity, conduct/reconciliation, community and interfaith family life, vocational preparation, and
   end-of-life legacy. Routine yearly choices remain active until the player changes them.
+- **Family:** mini-tabs separate household finances, partners and friendships, children and family
+  building, extended relatives, caregiving, safety, and inheritance legacy. All adult sexual-health
+  and pregnancy-planning mechanics begin at 18; sexual violence and under-18 sexual content are out
+  of scope.
+- **Places:** combines country facts, comparison, travel and migration, transportation and utilities,
+  and travel documents. International legal routes require a valid passport or accepted regional
+  identity card, while transport and utility costs are itemized in annual household statements.
 - Design language: clean, data-dense control-room panels (dark theme default). No modal popups except death.
 - **Save system:** Settings contains rolling autosave controls (Off/every 1, 5, or 10 years), named manual save slots, exact RNG restoration, and validated JSON export/import. Saved lives remain accessible from character creation.
 

@@ -13,6 +13,8 @@ import { ensureFinancialState } from './financialSystems.js';
 import { initExperience } from './experience.js';
 import { initReligionState } from './religion.js';
 import { initLifeState } from './lifeState.js';
+import { initAdultLife } from './adultLife.js';
+import { initTransportation } from './transportation.js';
 
 export const WEALTH_CLASSES = ['Destitute', 'Poor', 'Middle', 'Affluent', 'Rich'];
 const PERSONALITY_TRAITS = ['ambitious','caring','independent','social','cautious','creative','resilient','curious'];
@@ -170,6 +172,8 @@ export function createCharacter(rng, options = {}) {
   };
   character.religionState = initReligionState(character);
   character.lifeState = initLifeState(character, country, rng);
+  character.adultLife = initAdultLife();
+  character.transportation = initTransportation(character);
 
   // clamp stats
   for (const k of Object.keys(character.stats)) {

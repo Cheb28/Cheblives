@@ -38,14 +38,15 @@ assert(buyHome(buyer));assert(bc.mortgage?.remainingYears>0);const term=bc.mortg
 for(let i=0;i<term+2&&bc.alive;i++){bc.money.household+=medianWage(us)*5;stepYear(buyer);}
 assert((bc.debts.mortgage||0)<1||!bc.alive,'a funded mortgage clears by its scheduled term');
 
-// All approved career families are offered, while transportation and religion remain deferred.
+// All approved career families are offered, including the transportation expansion; religion remains separate.
 const worker=newGame({countryId:us.id,seed:103105}).character;worker.age=30;worker.education.stage='secondary_done';worker.education.degree="Bachelor's degree";worker.education.vocational=true;worker.employmentStatus='unemployed';
 const options=careerOptions(worker,us),labels=options.map(x=>x.label);
-assert.equal(options.length,13);assert(!labels.some(x=>/transport|relig/i.test(x)));
+assert.equal(options.length,17);assert(!labels.some(x=>/relig/i.test(x)));
 for(const expected of ['Agriculture','Construction','Healthcare','Technology','Government & Civil Service','Law','Media & Creative'])assert(labels.includes(expected));
+for(const expected of ['Local Transportation & Delivery','Trucking & Logistics','Rail & Public Transit','Aviation & Maritime'])assert(labels.includes(expected));
 const hired=attemptHire(worker,us,'technology',{chance:()=>true},{});assert(hired.hired);assert(worker.careerHistory.some(x=>x.type==='hired'));
 worker.job.yearsAtRung=20;worker.experience.sectors.technology=20;let rolls=0;resolveEmployment(worker,us,{chance:()=>++rolls>=3,int:()=>2});assert(worker.careerHistory.some(x=>x.type==='promoted'));
-assert(Object.keys(SECTORS).length>=13);
+assert(Object.keys(SECTORS).length>=17);
 
 // Social circles remain human-sized even after years of actively meeting people.
 const social=newGame({countryId:us.id,seed:103106});social.character.age=12;social.character.selectedActivities=['social'];

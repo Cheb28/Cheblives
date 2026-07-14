@@ -2,6 +2,7 @@ import { COUNTRY_BY_ID, medianWage } from '../../engine/countries.js';
 import { healthcareCoverage, disabilityBurden, severityLabel } from '../../engine/health.js';
 import { money } from '../format.js';
 import { bmiClassification, lifeConditionSummary } from '../../engine/lifeState.js';
+import { ensureAdultLife } from '../../engine/adultLife.js';
 
 const POLICIES = [
   { id: 'always', label: 'Always treat', desc: 'seek care even when it strains your finances' },
@@ -19,7 +20,7 @@ export default function Health({ state, refresh }) {
   const isMixed = country.healthcareArchetype === 'mixed';
   const setPolicy = id => { health.healthPolicy = id; refresh(); };
   const recent = [...(health.medicalHistory || [])].reverse().slice(0, 8);
-  const life=ch.lifeState,w=lifeConditionSummary(ch),recorded=life.body.recorded;
+  const life=ch.lifeState,w=lifeConditionSummary(ch),recorded=life.body.recorded,adult=ensureAdultLife(ch);
   const frailty=health.frailty||0,frailtyLabel=frailty>=60?'Severe':frailty>=35?'Moderate':frailty>=15?'Mild':'Not apparent';
 
   return <div className="grid cols-2">
@@ -35,6 +36,8 @@ export default function Health({ state, refresh }) {
       </div>
 
       <div className="panel" style={{marginTop:12}}><h3>Body Measurements</h3>{recorded?<><div className="kv"><span>Height</span><span>{recorded.heightCm.toFixed(0)} cm · {(recorded.heightCm/2.54).toFixed(0)} in</span></div><div className="kv"><span>Weight</span><span>{recorded.weightKg.toFixed(1)} kg · {(recorded.weightKg*2.20462).toFixed(1)} lb</span></div><div className="kv"><span>BMI</span><span>{recorded.bmi.toFixed(1)} · {bmiClassification(recorded.bmi)}</span></div><p className="muted">Recorded at age {recorded.age} through {recorded.source}. BMI is only one screening measure and does not define overall health.</p></>:<div className="muted">No body measurement has been recorded.</div>}<div className="kv"><span>Usual sleep</span><span>{life.measurements.sleepHoursNight.toFixed(1)} hours/night</span></div><div className="kv"><span>Exercise</span><span>{Math.round(life.measurements.exerciseMinutesWeek)} min/week</span></div><div className="kv"><span>Smoking exposure</span><span>{life.exposures.packYears.toFixed(1)} pack-years</span></div><div className="kv"><span>Alcohol</span><span>{life.measurements.drinksWeek} drinks/week</span></div></div>
+
+      {ch.age>=18&&<div className="panel" style={{marginTop:12}}><h3>Adult Sexual Health</h3><div className="kv"><span>Testing plan</span><span>{adult.sexual.testing}</span></div><div className="kv"><span>Protection plan</span><span>{adult.sexual.protection}</span></div><div className="kv"><span>HIV PrEP plan</span><span>{adult.sexual.prep?'Enabled where available':'Not enabled'}</span></div>{adult.infections.length===0?<div className="muted">No sexually transmitted infection is recorded.</div>:adult.infections.map(x=><div className="kv" key={x.id}><span>{x.diagnosed?x.name:'Undiagnosed infection'}</span><span>{x.diagnosed?(x.treated?'Treated or controlled':'Diagnosed; untreated'):'Not yet detected'}</span></div>)}<p className="muted">This is a non-explicit, consensual-adult health model. Testing and treatment depend on access and your standing healthcare choices.</p></div>}
 
       <div className="panel" style={{ marginTop: 12 }}>
         <h3>Chronic Conditions</h3>

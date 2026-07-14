@@ -12,6 +12,8 @@ import { migrateLanguages } from './language.js';
 import { ensureFinancialState } from './financialSystems.js';
 import { ensureReligionState } from './religion.js';
 import { ensureLifeState } from './lifeState.js';
+import { ensureAdultLife } from './adultLife.js';
+import { ensureTransportation } from './transportation.js';
 
 // Create a fresh game. options passed through to createCharacter.
 // If options.seed omitted, a random one is generated (kept for reproducibility).
@@ -71,6 +73,8 @@ export function deserialize(data) {
   ensureFinancialState(data.character,COUNTRY_BY_ID[data.character.countryId]);
   ensureReligionState(data.character);
   ensureLifeState(data.character,COUNTRY_BY_ID[data.character.countryId],rng);
+  ensureAdultLife(data.character);
+  ensureTransportation(data.character);
   return { ...data, rng };
 }
 
@@ -148,7 +152,7 @@ export function continueAsSuccessor(state, successorId) {
   if(person.languages)heir.languages=clone(person.languages);if(person.nativeLanguages)heir.nativeLanguages=[...person.nativeLanguages];
   if(person.careerHistory)heir.careerHistory=clone(person.careerHistory);heir.job=mappedJob(person,age);heir.everEmployed=!!heir.job||person.everEmployed;
   if(person.housing)heir.housing=clone(person.housing);heir.ownsHome=!!person.ownsHome;heir.homeValue=person.homeValue||0;
-  for(const key of ['will','judicial','military','benefits','social','fertility','familyPlans','safety','familyRights','relationshipHistory','financial','householdBudget','netWorthHistory','religionState','lifeState'])if(person[key]!=null)heir[key]=clone(person[key]);
+  for(const key of ['will','judicial','military','benefits','social','fertility','familyPlans','safety','familyRights','relationshipHistory','financial','householdBudget','netWorthHistory','religionState','lifeState','adultLife','transportation'])if(person[key]!=null)heir[key]=clone(person[key]);
   if(person.veteran!=null)heir.veteran=person.veteran;if(person.lifestyle)heir.lifestyle=person.lifestyle;if(person.selectedActivities)heir.selectedActivities=[...person.selectedActivities];
   const partner=person.spouse||person.partner;
   if((partner&&person.partnerStatus==='married')||person.spouse){heir.spouse=clone(partner);heir.spouse.relation='Spouse';heir.spouse.ageOffset=(partner.ageOffset||0)-(person.ageOffset||0);heir.relationshipStatus='married';}
@@ -168,7 +172,7 @@ export function continueAsSuccessor(state, successorId) {
   else if(heir.job)heir.employmentStatus=heir.job.sector==='informal'?'informal':'employed';
   else if(person.finances?.employmentStatus)heir.employmentStatus=person.finances.employmentStatus;
   else heir.employmentStatus='unemployed';
-  initializeFamilyEconomy(heir,residence,rng);ensureFinancialState(heir,residence);ensureReligionState(heir);ensureLifeState(heir,residence,rng);
+  initializeFamilyEconomy(heir,residence,rng);ensureFinancialState(heir,residence);ensureReligionState(heir);ensureLifeState(heir,residence,rng);ensureAdultLife(heir);ensureTransportation(heir);
   const generationDelta={child:1,grandchild:2,sibling:0,'niece/nephew':1,parent:-1,'aunt/uncle':-1,cousin:0,relative:0}[candidate.kind]||0;
   const dynastyHistory=[...(state.dynastyHistory||[]),{succession:(state.successionNumber||state.generation||1)+1,year:state.year,from:displayName(parent),to:displayName(heir),relation:candidate.kind,inheritance}];
   return {

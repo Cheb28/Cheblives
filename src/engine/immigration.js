@@ -3,6 +3,7 @@ import { enroll } from './education.js';
 import { destinationLanguageLevel, ensureLanguages, naturalizationLanguageRequirement, primaryLanguages } from './language.js';
 import { applyMigrationExchange } from './financialSystems.js';
 import { ensureExperience, sectorYears, vocationalYears } from './experience.js';
+import { ensureTransportation, passportRequirement } from './transportation.js';
 
 const BLOCS = [
   { id: 'eu-eea', label: 'EU / EEA / Switzerland', members: ['Austria','Belgium','Bulgaria','Croatia','Cyprus','Czechia','Denmark','Estonia','Finland','France','Germany','Greece','Hungary','Iceland','Ireland','Italy','Latvia','Liechtenstein','Lithuania','Luxembourg','Malta','Netherlands','Norway','Poland','Portugal','Romania','Slovakia','Slovenia','Spain','Sweden','Switzerland'] },
@@ -140,6 +141,7 @@ function blockedReason(ch, target) {
   if (ch.age < 18) return 'You must be 18 unless moving with family.';
   if (['serving','career'].includes(ch.military?.status)) return 'You cannot emigrate while serving in the military.';
   if (ch.employmentStatus === 'prison') return 'You cannot emigrate while imprisoned.';
+  if (ch.judicial?.activeCase) return 'You cannot emigrate while a criminal case is awaiting resolution.';
   if (target.id === ch.countryId) return 'You already live here.';
   if (ensureImmigration(ch).pending) return 'Another immigration application is pending.';
   return null;
@@ -206,6 +208,8 @@ export function immigrationOptions(ch, state, target) {
     if ((ch.judicial?.barredUntilAge||0)>ch.age&&r.id!=='irregular') {
       r.eligible=false;r.reason=`A criminal record bars most legal immigration applications until age ${ch.judicial.barredUntilAge}.`;
     }
+    const document=passportRequirement(ch,target,r.id);
+    if(r.eligible&&!document.ok){r.eligible=false;r.reason=document.reason;}
   }
   return routes;
 }
@@ -245,6 +249,7 @@ export function moveCharacter(ch, target, route, age, { irregular=false, student
   ch.location={name:location.name,kind:location.kind,colMultiplier:location.colMultiplier};
   ch.job=null; ch.jobSearch.sector=null; ch.partTimeWork=false; ch.benefits.unemploymentYearsLeft=0;
   ch.employmentStatus=student?'student':irregular?'informal':'unemployed';
+  const transport=ensureTransportation(ch);if(transport.license.status==='licensed'&&!['treaty','regional_residence'].includes(route))transport.license.status='conversion_required';
   if (student) { enroll(ch,target,'university'); ch.education._tuition=medianWage(target)*1.5; }
   const im=ensureImmigration(ch);
   const citizen=im.citizenships.includes(target.id);

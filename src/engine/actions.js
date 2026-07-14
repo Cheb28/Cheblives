@@ -15,12 +15,25 @@ import { marriageNameChoices, requestLegalNameChange, setChildName } from './nam
 import { bankProfile, drawCredit, openCreditCard, recordInvestmentSale, repayConsumerDebt, requestBudgetChange, sendRemittance, setFinancialGoal, setTaxCompliance, setTaxFilingChoice, takePersonalLoan, transferBetweenAccounts } from './financialSystems.js';
 import { changePublicReligion, planLifetimePilgrimage, reconcileConduct, setPrivateBelief, setReligionCommitment, setReligiousBranch, setReligiousCareer, setReligiousCommunity, updateCharityPlan } from './religion.js';
 import { setDiet, setHabit, setSleepTarget } from './lifeState.js';
+import { setSexualChoice, setSubstanceUse } from './adultLife.js';
+import { applyDrivingLicense, applyNationalId, applyPassport, buyVehicle, sellVehicle, setDrivingSafety, setTransportMode, setUtilityUse, setVehicleInsurance } from './transportation.js';
 
 export function setActivities(state, ids) { state.character.selectedActivities = ids; }
 export function setLifestyle(state, ls) { state.character.lifestyle = ls; }
 export function updateHabit(state, id, value) { const ch=state.character; return setHabit(ch, COUNTRY_BY_ID[ch.countryId], id, value); }
 export function updateDiet(state, value) { const ch=state.character; return setDiet(ch, COUNTRY_BY_ID[ch.countryId], value); }
 export function updateSleepTarget(state, hours) { const ch=state.character; return setSleepTarget(ch, COUNTRY_BY_ID[ch.countryId], hours); }
+export function updateSubstanceUse(state,id,value){return setSubstanceUse(state.character,id,value);}
+export function updateSexualChoice(state,patch){return setSexualChoice(state.character,patch);}
+export function updateTransportMode(state,primary,backup){const ch=state.character;return setTransportMode(ch,COUNTRY_BY_ID[ch.countryId],primary,backup);}
+export function requestDrivingLicense(state,commercial=false){const ch=state.character;return applyDrivingLicense(ch,COUNTRY_BY_ID[ch.countryId],commercial);}
+export function purchaseVehicle(state,type,finance=false){const ch=state.character;return buyVehicle(ch,COUNTRY_BY_ID[ch.countryId],type,finance);}
+export function disposeVehicle(state){return sellVehicle(state.character);}
+export function updateVehicleInsurance(state,coverage){const ch=state.character;return setVehicleInsurance(ch,COUNTRY_BY_ID[ch.countryId],coverage);}
+export function updateDrivingSafety(state,value){return setDrivingSafety(state.character,value);}
+export function updateUtilityUse(state,key,value){return setUtilityUse(state.character,key,value);}
+export function requestPassport(state,citizenshipId){const ch=state.character;return applyPassport(ch,COUNTRY_BY_ID[ch.countryId],citizenshipId);}
+export function requestNationalId(state,citizenshipId){const ch=state.character;return applyNationalId(ch,COUNTRY_BY_ID[ch.countryId],citizenshipId);}
 export function setPrivateSchool(state, enabled) { state.character.education.private = enabled; }
 export function setResistDropout(state, enabled) { state.character.education.resistDropout = enabled; }
 export function updateReligionCommitment(state, id, enabled) { return setReligionCommitment(state.character, id, enabled); }
@@ -65,8 +78,8 @@ export function planMarriage(state) { const ch=state.character;if(ch.partner?.en
 export function setMarriageNameChoice(state, choice) { const ch=state.character,country=COUNTRY_BY_ID[ch.countryId];if(!ch.partner?.engaged)return false;const allowed=marriageNameChoices(ch,ch.partner,country).some(x=>x.id===choice);if(allowed)ch.identity.pendingMarriageChoice=choice;return allowed; }
 export function endPartnership(state) { const ch=state.character;if(ch.partner||ch.spouse){ch.separationIntent=true;return true;}return false; }
 export function requestDivorce(state) { const ch=state.character;if(ch.spouse?.alive){ch.divorceIntent=true;return true;}return false; }
-export function setChildrenIntent(state, intent) { state.character.childrenIntent = intent; }
-export function setContraception(state, method) { state.character.fertility.contraception = ['none','barrier','reliable'].includes(method) ? method : 'none'; }
+export function setChildrenIntent(state, intent) { if(state.character.age<18)return false;state.character.childrenIntent = intent;return true; }
+export function setContraception(state, method) { if(state.character.age<18)return false;state.character.fertility.contraception = ['none','barrier','reliable'].includes(method) ? method : 'none';return true; }
 export function requestFertilityTreatment(state) { const ch=state.character;if(ch.age>=18){ch.fertility.treatment='active';return true;}return false; }
 export function requestAdoption(state) { const ch=state.character;if(ch.age>=21){ch.familyPlans.adoption='pending';return true;}return false; }
 export function requestFostering(state) { const ch=state.character;if(ch.age>=21){ch.familyPlans.foster=true;return true;}return false; }

@@ -43,10 +43,12 @@ export default function Finances({ state, refresh }) {
         <div className="kv"><span className="k">Investments</span><span className="v">{money(investmentValue(ch))}</span></div>
         {ch.ownsHome && <div className="kv"><span className="k">Home value</span><span className="v">{money(ch.homeValue)}</span></div>}
         {Object.entries(ch.debts || {}).filter(([, v]) => v > 0).map(([key, v]) => {
-          const labels={studentLoan:'Student loan',mortgage:'Mortgage',business:'Business debt',personalLoan:'Personal loan',creditCard:'Credit card',tax:'Tax balance'};
+          const labels={studentLoan:'Student loan',mortgage:'Mortgage',business:'Business debt',personalLoan:'Personal loan',creditCard:'Credit card',tax:'Tax balance',vehicle:'Vehicle loan'};
           return <div className="kv" key={key}><span className="k">{labels[key]||'Other debt'}</span><span className="v" style={{ color: 'var(--bad)' }}>−{money(v)}</span></div>;
         })}
         <div className="kv" style={{ borderTop: '1px solid var(--border)', marginTop: 6, paddingTop: 8 }}><strong>Net worth</strong><span className="v big-num">{money(netWorth(ch))}</span></div>
+        <div className="kv"><span className="k">Last household utilities</span><span className="v">{money(Object.values(ch.transportation?.utilities?.lastYear||{}).reduce((s,x)=>s+x,0))}</span></div>
+        <div className="kv"><span className="k">Vehicle value</span><span className="v">{money(ch.transportation?.vehicle?.value||0)}</span></div>
         <div style={{ marginTop: 14 }}><div className="muted" style={{ fontSize: 12 }}>Net worth over time</div><Sparkline data={ch.netWorthHistory} /></div>
       </div>
 

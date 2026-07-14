@@ -8,6 +8,7 @@ import { ensureMemberEconomy, resolveHouseholdEconomy } from './household.js';
 import { makeRng } from './rng.js';
 import { initReligionState } from './religion.js';
 import { initLifeState, learningAptitudeFactor, socialConfidenceFactor } from './lifeState.js';
+import { maternalTransmissionRisk } from './adultLife.js';
 
 function clamp(v) { return Math.max(0, Math.min(100, v)); }
 function pickDistribution(rng, list, fallback) { return list?.length ? rng.weighted(list, x => x.pct || 1).name : fallback; }
@@ -165,10 +166,11 @@ function resolvePregnancy(ch,country,rng,logs,expenses) {
     const pregnantAge=f.pregnancy.pregnantPersonAge;
     const miscarriage=.08+(pregnantAge>=35?.12:0)+(pregnantAge>=40?.18:0);
     if(rng.chance(miscarriage)){logs.push('The pregnancy ended in miscarriage.');ch.stats.happiness=clamp(ch.stats.happiness-8);}
-    else {ch.family.push(makeChild(ch,country,rng));logs.push(`A child was born after a ${f.pregnancy.planned?'planned':'surprise'} pregnancy.`);expenses.push({label:'Pregnancy and childbirth',amount:medianWage(country)*({generous:.02,moderate:.08,minimal:.18,none:.3}[country.welfareTier]||.1),household:true});}
+    else {const child=makeChild(ch,country,rng),vertical=maternalTransmissionRisk(ch);for(const [id,risk] of Object.entries(vertical))if(risk>0&&rng.chance(risk))child.healthConditions.push(id==='hiv'?'HIV acquired during pregnancy or childbirth':id==='syphilis'?'Congenital syphilis':'Hepatitis B acquired around birth');ch.family.push(child);logs.push(`A child was born after a ${f.pregnancy.planned?'planned':'surprise'} pregnancy.`);if(child.healthConditions.length)logs.push('The newborn requires treatment for an infection acquired during pregnancy or childbirth.');expenses.push({label:'Pregnancy and childbirth',amount:medianWage(country)*({generous:.02,moderate:.08,minimal:.18,none:.3}[country.welfareTier]||.1),household:true});}
     f.pregnancy=null;
   }
   if (f.pregnancy) return;
+  if(ch.age<18)return;
   const mate=ch.spouse?.alive?ch.spouse:ch.partner?.alive?ch.partner:null;
   if (!mate && f.treatment!=='active') return;
   const sameSex=mate ? isSameSexCouple(ch,mate) : false;

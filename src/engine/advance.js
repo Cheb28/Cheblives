@@ -27,6 +27,8 @@ import { bankProfile, budgetRates, ensureFinancialState, resolveFinancialYear, t
 import { inheritanceRules } from './inheritance.js';
 import { ensureReligionState, recordConduct, resolveReligionYear } from './religion.js';
 import { ensureLifeState, lifeConditionSummary, refreshLifeConditions, resolveLifeStateYear } from './lifeState.js';
+import { ensureAdultLife, resolveAdultLifeYear } from './adultLife.js';
+import { ensureTransportation, resolveTransportationYear } from './transportation.js';
 
 function clamp(v, lo = 1, hi = 100) { return Math.max(lo, Math.min(hi, v)); }
 
@@ -207,7 +209,8 @@ function resolveFinances(ch, country, rng, incomeLines, log, extraExpenses = [])
   if (independent) {
     const serving = ch.military.status === 'serving' || ch._servedThisYear;
     const imprisoned = ch.employmentStatus === 'prison';
-    const col = costOfLiving(country, ch) * (imprisoned ? 0.15 : serving ? 0.4 : 1);
+    const utilityComponent=extraExpenses.filter(x=>x.utility).reduce((s,x)=>s+x.amount,0);
+    const col = Math.max(0,costOfLiving(country, ch) * (imprisoned ? 0.15 : serving ? 0.4 : 1)-utilityComponent);
     const consumptionTax=col*taxModel.consumptionRate/(1+taxModel.consumptionRate);
     statement.tax.consumptionTax+=consumptionTax;statement.tax.total+=consumptionTax;householdTax.total+=consumptionTax;
     const rentAmt = serving || imprisoned ? 0 : rent(country, ch, personalTaxable);
@@ -315,7 +318,7 @@ function resolveFinances(ch, country, rng, incomeLines, log, extraExpenses = [])
 export function netWorth(ch) {
   return (ch.money.cash || 0) + (ch.money.bank || 0)+(ch.money.household||0) - (ch.debts.studentLoan || 0)-(ch.debts.mortgage||0)
     - (ch.debts.business || 0)-(ch.debts.personalLoan||0)-(ch.debts.creditCard||0)-(ch.debts.tax||0) + investmentValue(ch) + (ch.business?.capital||0)
-    - (ch.business?.loan || 0) - (ch.judicial?.finesOwed || 0) + (ch.homeValue || 0);
+    - (ch.business?.loan || 0) - (ch.debts.vehicle||0) - (ch.judicial?.finesOwed || 0) + (ch.homeValue || 0)+(ch.transportation?.vehicle?.value||0);
 }
 
 // ---- Main step ----------------------------------------------------------
@@ -326,6 +329,8 @@ export function advanceYear(state) {
   ensureHousing(ch);
   ensureReligionState(ch);
   ensureLifeState(ch,COUNTRY_BY_ID[ch.countryId],state.rng);
+  ensureAdultLife(ch);
+  ensureTransportation(ch);
   const rng = state.rng;
   let country = COUNTRY_BY_ID[ch.countryId];
   const log = [];
@@ -415,6 +420,10 @@ export function advanceYear(state) {
   if (ch.age >= 18 && ch.immigration?.residence?.visa?.kind !== 'student') ch.partTimeWork = false;
   const life=resolveLifeStateYear(ch,country,rng);
   for(const line of life.logs){log.push(line);pushEvent(ch,'personal',line);}
+  const adultLife=resolveAdultLifeYear(ch,country);
+  for(const line of adultLife.logs){log.push(line);pushEvent(ch,'health',line);}
+  const transport=resolveTransportationYear(ch,country);
+  for(const line of transport.logs){log.push(line);pushEvent(ch,'personal',line);}
 
   // 5. Employment resolution (promotion/layoff) for civilian jobs; recession doubles layoffs.
   if (ch.job) for (const l of resolveEmployment(ch, country, rng, { layoffMult: ev.effects.recession ? 2 : 1 })) log.push(l);
@@ -433,6 +442,7 @@ export function advanceYear(state) {
   const incomeLines = [];
   incomeLines.push(...family.incomes);
   incomeLines.push(...life.incomes);
+  incomeLines.push(...adultLife.incomes);
   if (ch.job) {
     let salary = wageFor(country, ch.job, ch);
     if (ev.effects.wageShockPct) salary *= (1 + ev.effects.wageShockPct); // war/recession wage hit
@@ -469,10 +479,13 @@ export function advanceYear(state) {
   for (const line of religion.logs) { log.push(line); pushEvent(ch, 'personal', line); }
   extraExpenses.push(...religion.expenses);
   extraExpenses.push(...life.expenses);
+  extraExpenses.push(...adultLife.expenses);
+  extraExpenses.push(...transport.expenses);
   extraExpenses.push(...annualFinance.expenses);
   extraExpenses.push(...family.expenses);
   if (hctx.insuranceLine) extraExpenses.push(hctx.insuranceLine);
   if (health.medicalCosts > 0) extraExpenses.push({ label: 'Medical costs', amount: health.medicalCosts, household: ch.age < 18 || ch.employmentStatus === 'student' });
+  if (adultLife.medicalCosts > 0) extraExpenses.push({ label: 'Adult sexual-health treatment', amount: adultLife.medicalCosts });
 
   const fin = resolveFinances(ch, country, rng, incomeLines, log, extraExpenses);
   if ((ch.financial?.tax?.compliance || 'honest') === 'underreport' && fin.statement.tax.evaded > 0) {

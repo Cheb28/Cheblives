@@ -17,6 +17,12 @@ const OFFENCES = {
   activism: { label: 'Prohibited political activity', evidence: 0.38, fine: 0.20, prison: 3, severity: 2 },
   business: { label: 'Business-law violation', evidence: 0.72, fine: 1.00, prison: 2, severity: 2 },
   tax_evasion: { label: 'Tax evasion', evidence: 0.82, fine: 1.20, prison: 2, severity: 2 },
+  drug_possession: { label: 'Prohibited drug possession', evidence: 0.76, fine: 0.55, prison: 2, severity: 2 },
+  prohibited_alcohol: { label: 'Prohibited alcohol possession', evidence: 0.74, fine: 0.35, prison: 1, severity: 1 },
+  sex_work: { label: 'Prohibited sale of sexual services', evidence: 0.68, fine: 0.45, prison: 1, severity: 1 },
+  purchase_sex: { label: 'Prohibited purchase of sexual services', evidence: 0.70, fine: 0.45, prison: 1, severity: 1 },
+  dui: { label: 'Impaired driving', evidence: 0.88, fine: 1.00, prison: 2, severity: 3 },
+  uninsured_driving: { label: 'Driving without required insurance', evidence: 0.90, fine: 0.45, prison: 0, severity: 1 },
   false_accusation: { label: 'False criminal accusation', evidence: 0.24, fine: 0.35, prison: 2, severity: 1 },
 };
 
@@ -32,6 +38,7 @@ export function ensureJudicial(ch) {
   if (!ch.judicial) ch.judicial = initJudicial();
   ch.judicial.cases ||= [];
   ch.judicial.records ||= [];
+  ch.judicial.drivingOffences ||= 0;
   return ch.judicial;
 }
 

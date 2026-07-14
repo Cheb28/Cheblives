@@ -308,6 +308,39 @@ Religion uses six focused mini-tabs. Unresolved decisions and a clickable Needs 
 live in Overview; resolved events remain in the Life Log. The top navigation is now Overview,
 Activities, Work, Education, Family, Health, Finances, Places, Religion, Law, and Settings.
 
+### Phase 10.4.1B–C — Adult Life, Family Organization, Transportation, Utilities, and Travel Documents
+
+**Status: complete.** Family now uses Overview, Household, Partner & Relationships, Children,
+Extended Family, and Care & Legacy mini-tabs. Activity choices explain that age, health, money,
+infrastructure, country law, and social context determine availability. Alcohol and named non-medical
+substances have persistent adult-only settings, perceived short-term benefits, health and financial
+costs, dependence and overdose risk, and simplified country-specific legal exposure.
+
+Consensual adult relationships, protection, screening, PrEP, voluntary adult sex work, STI care,
+and treatment-sensitive infection risk around pregnancy and childbirth are modeled from age 18.
+The hard scope excludes sexual violence, coercion, exploitation, trafficking, and all sexual content
+involving anyone under 18. The presentation remains non-explicit and focused on health, finances,
+law, and player agency.
+
+Places now includes Transportation & Utilities and Travel Documents. Players choose locally
+available transport, earn ordinary or commercial licences, buy or finance vehicles, pay fuel or
+electric charging, maintenance, registration, insurance, and loan costs, and can face crashes,
+tickets, uninsured-driving charges, DUI, licence suspension, and insurance increases. Walking,
+cycling, motorcycles, and transit carry distinct simplified risks. Four transportation career
+families cover delivery/local transport, trucking/logistics, rail/transit, and aviation/maritime.
+
+Electricity, water, heating, internet, utility arrears, disconnection, restoration, infrastructure
+interruptions, and electric-vehicle charging appear as separate household statement lines. Passports
+and national identity cards have applications, fees, issue dates, expiry, renewal, and rare loss.
+Legal international routes require a passport unless an accepted regional identity card applies;
+asylum and irregular travel retain their own rules. These national law profiles are deliberately
+simplified and are not legal advice.
+
+**Verified:** hard age boundaries, persistent choices, household and medical integration, transport
+availability, vehicle finance and costs, insurance and DUI consequences, utilities and arrears,
+passport-gated migration, European regional identity-card travel, transportation careers, and all
+new mini-tab organization have automated coverage.
+
 ### Phase 10.4.2 — Christianity
 
 **Status: planned.** Add Catholic, Orthodox, Protestant, and locally important Christian practice,

@@ -9,7 +9,7 @@ export const HABITS = [
   {id:'socializing',label:'Social life',minAge:6,benefit:'Supports friendships, confidence, belonging, and enjoyment.'},
   {id:'partying',label:'Partying',minAge:14,benefit:'Can bring enjoyment, friendships, dating, and networking.'},
   {id:'smoking',label:'Smoking',minAge:14,benefit:'May provide temporary perceived calm, alertness, or social bonding.'},
-  {id:'alcohol',label:'Alcohol',minAge:16,benefit:'Can support relaxation, celebrations, and social participation.'},
+  {id:'alcohol',label:'Alcohol',minAge:18,benefit:'Can support relaxation, celebrations, and social participation.'},
   {id:'gambling',label:'Gambling',minAge:18,benefit:'Provides excitement, social participation, and a chance of winnings.'},
   {id:'gaming',label:'Gaming and online leisure',minAge:6,benefit:'Provides entertainment, friendships, and sometimes technical interests.'},
 ];

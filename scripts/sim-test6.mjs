@@ -24,6 +24,7 @@ const israel = COUNTRY_BY_NAME.Israel;
 const norway = COUNTRY_BY_NAME.Norway;
 const northKorea = COUNTRY_BY_NAME['North Korea'];
 const switzerland = COUNTRY_BY_NAME.Switzerland;
+const givePassport=ch=>ch.transportation.documents.passports.push({countryId:ch.immigration.citizenships[0],issuedAge:ch.age,expiresAge:ch.age+10});
 
 // Nigerian graduate -> skilled route to Germany -> naturalization after real data countdown.
 const skilled = newGame({ countryId:nigeria.id, seed:6101, wealthClass:'Middle' });
@@ -33,6 +34,7 @@ skilled.character.education.stage='graduated';
 skilled.character.experience.sectors.professional=2;
 skilled.character.education.performance=75;
 skilled.character.money.bank=medianWage(nigeria)*20;
+givePassport(skilled.character);
 let routes=immigrationOptions(skilled.character,skilled,germany);
 assert.equal(routes.find(r=>r.id==='skilled').eligible,true,'qualified Nigerian graduate can use German skilled route');
 const oldBank=skilled.character.money.bank;
@@ -50,6 +52,7 @@ assert(skilled.character.immigration.citizenships.includes(germany.id));
 // Polish citizen -> Germany through EU freedom of movement immediately.
 const treaty=newGame({countryId:poland.id,seed:6102,wealthClass:'Middle'});
 treaty.character.age=25;treaty.character.employmentStatus='unemployed';treaty.character.money.bank=medianWage(poland)*3;
+givePassport(treaty.character);
 routes=immigrationOptions(treaty.character,treaty,germany);
 assert.equal(routes.find(r=>r.id==='treaty').eligible,true);
 const treatyResult=submitMigration(treaty,germany.id,'treaty');
@@ -84,6 +87,7 @@ console.log(`Skilled migration: Nigeria → Germany; naturalized after ${germany
 // preserve a genuine player choice between returning, renewing, and overstaying.
 const holiday=newGame({countryId:us.id,seed:6105,wealthClass:'Middle'});
 holiday.character.age=25;holiday.character.employmentStatus='unemployed';holiday.character.money.bank=medianWage(us)*10;
+givePassport(holiday.character);
 assert.equal(immigrationOptions(holiday.character,holiday,nz).find(r=>r.id==='working_holiday').eligible,true);
 moveCharacter(holiday.character,nz,'working_holiday',25,{});
 assert.equal(holiday.character.immigration.residence.visa.yearsRemaining,1);
@@ -123,6 +127,7 @@ assert.equal(sponsored.character.jobSearch.sector,'industrial');
 // freedom of movement: they grant two-year work/residence status first.
 const mercosur=newGame({countryId:argentina.id,seed:6109,wealthClass:'Middle'});
 mercosur.character.age=25;mercosur.character.money.bank=medianWage(argentina)*10;
+givePassport(mercosur.character);
 const brazilRoutes=immigrationOptions(mercosur.character,mercosur,brazil);
 assert.equal(brazilRoutes.find(r=>r.id==='treaty').eligible,false);
 assert.equal(brazilRoutes.find(r=>r.id==='regional_residence').eligible,true);
@@ -133,6 +138,7 @@ assert.equal(mercosur.character.immigration.residence.visa.yearsRemaining,2);
 // Italy-Japan working holiday entered force in 2026.
 const italyJapan=newGame({countryId:italy.id,seed:6110,wealthClass:'Middle'});
 italyJapan.character.age=25;italyJapan.character.money.bank=medianWage(italy)*10;
+givePassport(italyJapan.character);
 assert.equal(immigrationOptions(italyJapan.character,italyJapan,japan).find(r=>r.id==='working_holiday').eligible,true);
 
 // Australian specified regional work unlocks year two and then year three.
