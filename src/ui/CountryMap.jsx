@@ -2,7 +2,29 @@ import { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-const STYLE_URL = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
+// A local style with CARTO raster tiles avoids the separate remote style,
+// vector metadata, font, sprite, and WebGL-vector requests that produced a
+// black canvas on some browsers while the marker still rendered.
+const MAP_STYLE = {
+  version: 8,
+  sources: {
+    carto: {
+      type: 'raster',
+      tiles: [
+        'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+        'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+        'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+        'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+      ],
+      tileSize: 256,
+      attribution: '© CARTO · © OpenStreetMap contributors',
+    },
+  },
+  layers: [
+    { id: 'background', type: 'background', paint: { 'background-color': '#0b1119' } },
+    { id: 'carto-basemap', type: 'raster', source: 'carto', minzoom: 0, maxzoom: 20 },
+  ],
+};
 
 function markerElement(label, kind) {
   const el = document.createElement('div');
@@ -23,7 +45,7 @@ export default function CountryMap({ country, homeCountry }) {
     setFailed(false);
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: STYLE_URL,
+      style: MAP_STYLE,
       center: country.coordinates,
       zoom: country.population < 500000 ? 5.5 : country.population < 5000000 ? 4.5 : 3.6,
       attributionControl: false,
@@ -31,11 +53,10 @@ export default function CountryMap({ country, homeCountry }) {
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
     map.addControl(new maplibregl.AttributionControl({
       compact: true,
-      customAttribution: '<a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a> · <a href="https://carto.com/attributions">© CARTO</a> · <a href="https://maplibre.org/">MapLibre</a>',
+      customAttribution: '<a href="https://maplibre.org/">MapLibre</a>',
     }));
-    map.on('error', event => {
-      if (!map.isStyleLoaded() && event?.error) setFailed(true);
-    });
+    map.on('error', event => { if (event?.error) setFailed(true); });
+    map.on('idle', () => setFailed(false));
     mapRef.current = map;
     return () => {
       markersRef.current.forEach(marker => marker.remove());
@@ -69,4 +90,3 @@ export default function CountryMap({ country, homeCountry }) {
     {failed && <div className="country-map-error" role="status">The basemap could not load. The complete country facts remain available below.</div>}
   </div>;
 }
-

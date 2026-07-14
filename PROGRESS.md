@@ -6,6 +6,9 @@ Handoff notes for whoever continues this build (see `START_HERE.txt` first, then
 
 ### Phase 10.2 — Interactive Map and Country Information
 
+- Corrected the post-release black-map issue by replacing CARTO's multi-request vector style with
+  its simpler raster tiles. Replaced Unicode flag emoji with locally bundled flag-icons SVG artwork
+  so Windows and other platforms display real flags instead of two-letter country codes.
 - Added a dedicated Country tab and a compact Overview link; World remains the country-comparison
   browser. The map follows migration and shows a second birth-country marker when applicable.
 - Added MapLibre with a CARTO Dark Matter/OpenStreetMap basemap as a nested lazy chunk, preserving

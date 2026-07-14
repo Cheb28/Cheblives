@@ -37,8 +37,9 @@ assert.match(countryTab, /lazy\(\(\) => import\('\.\.\/CountryMap\.jsx'\)\)/, 'M
 assert.match(countryTab, /About This Country Model/);
 assert.match(countryTab, /not legal, immigration, financial, or medical advice/);
 assert.match(countryTab, /OpenStreetMap contributors/);
-assert.match(map, /dark-matter-gl-style/);
+assert.match(map, /dark_all\/\{z\}\/\{x\}\/\{y\}\.png/);
 assert(!/navigator\.geolocation/.test(map), 'map must not request browser geolocation');
+assert.match(countryTab, /flagUrl\(country\.flagCode\)/);
+assert.match(countryTab, /Flag of \$\{country\.name\}/);
 
 console.log(`Phase 10.2 checks passed for ${COUNTRIES.length} countries.`);
-

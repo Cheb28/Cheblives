@@ -1,12 +1,17 @@
 import { lazy, Suspense } from 'react';
 import { COUNTRY_BY_ID } from '../../engine/countries.js';
 import { countryFacts } from '../../engine/countryFacts.js';
+import { flagUrl } from '../../data/flagUrls.js';
 import { pop, titleCase } from '../format.js';
 
 const CountryMap = lazy(() => import('../CountryMap.jsx'));
 
 function Fact({ label, children }) {
   return <div className="country-fact"><dt>{label}</dt><dd>{children}</dd></div>;
+}
+
+function CountryFlag({ country, compact = false }) {
+  return <img className={`country-flag-art${compact ? ' compact' : ''}`} src={flagUrl(country.flagCode)} alt={`Flag of ${country.name}`} />;
 }
 
 export default function Country({ state }) {
@@ -17,7 +22,7 @@ export default function Country({ state }) {
   return <div className="country-screen">
     <section className="panel country-hero" aria-labelledby="country-heading">
       <div>
-        <div className="country-flag" aria-hidden="true">{facts.flag}</div>
+        <CountryFlag country={country} />
         <h2 id="country-heading">{country.name}</h2>
         <p>{ch.location.name} · {country.region}</p>
       </div>
@@ -35,7 +40,7 @@ export default function Country({ state }) {
     <section className="panel" aria-labelledby="facts-heading">
       <h3 id="facts-heading">Country Facts</h3>
       <dl className="country-facts">
-        <Fact label="Country and flag">{facts.flag} {facts.name}</Fact>
+        <Fact label="Country and flag"><span className="country-flag-fact"><CountryFlag country={country} compact /> {facts.name}</span></Fact>
         <Fact label="Capital and modeled location">{facts.capital} · {facts.location}</Fact>
         <Fact label="Population">{pop(facts.population)}</Fact>
         <Fact label="Primary languages">{facts.languages.join(', ') || 'Not listed'}</Fact>
@@ -62,4 +67,3 @@ export default function Country({ state }) {
     </aside>
   </div>;
 }
-

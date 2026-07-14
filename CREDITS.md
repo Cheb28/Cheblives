@@ -14,6 +14,8 @@ as your own. See [LICENSE](LICENSE) for the complete permission notice.
 - Interactive maps use MapLibre GL JS with CARTO basemaps and OpenStreetMap data.
   Map data © OpenStreetMap contributors; basemap © CARTO. MapLibre GL JS is
   available under its open-source license.
+- Country flag SVGs are provided by [flag-icons](https://github.com/lipis/flag-icons)
+  under the MIT License and are bundled locally for reliable rendering.
 
 Country profiles are simplified for simulation and are not legal, financial, medical, or
 immigration advice.
